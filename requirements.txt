@@ -1,4 +1,4 @@
--e git+https://retche:ChotuveGrupo10@github.com/chotuve-grupo10/chotuve-auth-server.git@fcf324816d8054a1be3eb68647b5e4018d907c17#egg=auth_server
+-e git+https://retche:ChotuveGrupo10@github.com/chotuve-grupo10/chotuve-auth-server.git@creatingServer#egg=auth_server
 attrs==19.3.0
 click==7.1.1
 Flask==1.1.2
