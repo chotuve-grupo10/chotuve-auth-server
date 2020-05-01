@@ -21,3 +21,7 @@
 
 6. Corremos el server localmente:  
 ```flask run```
+
+## Direcciones en Heroku
+- https://chotuve-auth-server-production.herokuapp.com/
+- https://chotuve-auth-server-dev.herokuapp.com/
