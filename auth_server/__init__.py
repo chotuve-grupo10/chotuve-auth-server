@@ -55,5 +55,4 @@ def create_app(test_config=None):
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
 
-	return
-	
+	return app
