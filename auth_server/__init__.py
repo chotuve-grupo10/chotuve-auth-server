@@ -29,7 +29,7 @@ def create_app(test_config=None):
 	def _respond():
 
 		response = {}
-		response["Status"] = "Running"
+		response['Health'] = 'OK'
 		return json.dumps(response)
 
 	@app.route('/api/hello/')
