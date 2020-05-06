@@ -25,14 +25,14 @@ def create_app(test_config=None):
 	except OSError:
 		pass
 
-	@app.route('/ping/', methods=['GET'])
+	@app.route('/api/ping/', methods=['GET'])
 	def _respond():
 
 		response = {}
-		response["Status"] = "Running"
+		response['Health'] = 'OK'
 		return json.dumps(response)
 
-	@app.route('/hello/')
+	@app.route('/api/hello/')
 	def _hello():
 		return 'Hello, World!'
 
@@ -46,7 +46,7 @@ def create_app(test_config=None):
 	#     # show the post with the given id, the id is an integer
 	#     return 'Post %d' % post_id
 
-	@app.route('/about/')
+	@app.route('/api/about/')
 	def _about():
 		return 'This is Authorization Server for chotuve-10. Still in construction'
 

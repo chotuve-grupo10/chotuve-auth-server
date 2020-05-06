@@ -1,11 +1,18 @@
+import simplejson as json
+
 def test_hello(client):
-	response = client.get('/hello', follow_redirects=True)
+	response = client.get('/api/hello', follow_redirects=True)
 	assert response.data == b'Hello, World!'
 	assert response.status_code == 200
 
 def test_about(client):
-	response = client.get('/about/', follow_redirects=True)
+	response = client.get('/api/about/', follow_redirects=True)
 	assert response.data == b'This is Authorization Server for chotuve-10. Still in construction'
+	assert response.status_code == 200
+
+def test_ping(client):
+	response = client.get('/api/ping/', follow_redirects=True)
+	assert json.loads(response.data) == {'Health' : 'OK'}
 	assert response.status_code == 200
 
 def test_home(client):
