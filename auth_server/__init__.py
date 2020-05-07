@@ -1,5 +1,6 @@
 import os
 from flask import Flask, request
+from flasgger import Swagger
 # La documentación de Flask dice que SIMPLEJSON funciona más rápido
 # y que Flask está bien integrado con este
 import simplejson as json
@@ -11,6 +12,7 @@ def create_app(test_config=None):
 	# Parametro que no estamos usando actualmente en from_mapping
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	app.config.from_mapping(SECRET_KEY='dev')
+	Swagger(app)
 
 	if test_config is None:
 	    # load the instance config, if it exists, when not testing
@@ -27,7 +29,13 @@ def create_app(test_config=None):
 
 	@app.route('/api/ping/', methods=['GET'])
 	def _respond():
-
+		"""
+    Este es un método para verificar el status del server
+    ---
+    responses:
+      200:
+        description: Server status
+    """
 		response = {}
 		response['Health'] = 'OK'
 		return json.dumps(response)
