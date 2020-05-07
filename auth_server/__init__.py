@@ -56,6 +56,13 @@ def create_app(test_config=None):
 
 	@app.route('/api/about/')
 	def _about():
+		"""
+    Este es un método para recibir información del server
+    ---
+    responses:
+      200:
+        description: Server status
+    """
 		return 'This is Authorization Server for chotuve-10. Still in construction'
 
 
