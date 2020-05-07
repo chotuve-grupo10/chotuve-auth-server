@@ -70,4 +70,17 @@ def create_app(test_config=None):
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
 
+	### Métodos no implementados aún ###
+
+	@app.route('/api/login/', methods=['GET'])
+	def _login():
+		"""
+    Este servicio permitirá a los usuarios poder ingresar al sistema
+    ---
+    responses:
+      200:
+        description: Server status
+    """
+		return {}
+
 	return app
