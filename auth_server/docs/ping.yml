@@ -1,0 +1,5 @@
+Este es un método para verificar el status del server
+---
+responses:
+  200:
+    description: Server status

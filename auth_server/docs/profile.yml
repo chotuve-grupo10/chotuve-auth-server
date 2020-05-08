@@ -1,0 +1,10 @@
+Este servicio permitirá a los usuarios poder ingresar al sistema
+---
+parameters:
+  - name: user id
+    in: query
+    type: string
+    required: true
+responses:
+  200:
+    description: Returns token

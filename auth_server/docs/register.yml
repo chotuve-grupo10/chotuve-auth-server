@@ -1,0 +1,22 @@
+Este servicio permitirá a los usuarios darse de alta en el sistema
+---
+parameters:
+  - name: complete name
+    in: query
+    type: string
+    required: true
+  - name: phone
+    in: query
+    type: int
+    required: true
+  - name: e-mail
+    in: query
+    type: string
+    required: true
+  - name: profile photo
+    in: query
+    type: object
+    required: true
+responses:
+  200:
+    description: Returns token
