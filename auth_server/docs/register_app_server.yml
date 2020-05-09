@@ -1,0 +1,5 @@
+Este servicio permitirá registrar un app server
+---
+responses:
+  200:
+    description: Returns token

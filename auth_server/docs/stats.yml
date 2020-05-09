@@ -1,0 +1,5 @@
+Servicio que mostrará estádisticas y datos de uso acerca de los Application servers
+---
+responses:
+  200:
+    description: Information about app servers

@@ -1,0 +1,5 @@
+Servicio que podrá visualizar el estado actual de todos los Application Servers corriendo
+---
+responses:
+  200:
+    description: Current app servers state
