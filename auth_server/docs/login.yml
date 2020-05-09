@@ -1,0 +1,5 @@
+Este servicio permitirá a los usuarios poder ingresar al sistema
+---
+responses:
+  200:
+    description: Returns token

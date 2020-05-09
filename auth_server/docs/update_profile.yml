@@ -1,0 +1,10 @@
+Este servicio permite a un usuario actualizar su perfil
+---
+parameters:
+  - name: id
+    in: path
+    type: string
+    required: true
+responses:
+  200:
+    description: Returns token

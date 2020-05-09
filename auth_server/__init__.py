@@ -1,7 +1,9 @@
 import os
 from flask import Flask, request
+from flasgger import Swagger
+from flasgger import swag_from
 # La documentación de Flask dice que SIMPLEJSON funciona más rápido
-# y que Flask está bien integrado con este
+# y que Flask está bien integrado con este.
 import simplejson as json
 
 def create_app(test_config=None):
@@ -11,6 +13,7 @@ def create_app(test_config=None):
 	# Parametro que no estamos usando actualmente en from_mapping
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	app.config.from_mapping(SECRET_KEY='dev')
+	Swagger(app)
 
 	if test_config is None:
 	    # load the instance config, if it exists, when not testing
@@ -26,8 +29,8 @@ def create_app(test_config=None):
 		pass
 
 	@app.route('/api/ping/', methods=['GET'])
+	@swag_from('docs/ping.yml')
 	def _respond():
-
 		response = {}
 		response['Health'] = 'OK'
 		return json.dumps(response)
@@ -47,6 +50,7 @@ def create_app(test_config=None):
 	#     return 'Post %d' % post_id
 
 	@app.route('/api/about/')
+	@swag_from('docs/about.yml')
 	def _about():
 		return 'This is Authorization Server for chotuve-10. Still in construction'
 
@@ -54,5 +58,52 @@ def create_app(test_config=None):
 	@app.route('/')
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
+
+	### Métodos no implementados aún ###
+
+	@app.route('/api/login/', methods=['GET'])
+	@swag_from('docs/login.yml')
+	def _login():
+		return {}
+
+	@app.route('/api/forgot_password/', methods=['GET'])
+	@swag_from('docs/forgot_password.yml')
+	def _forgot_password():
+		return {}
+
+	@app.route('/api/reset_password/', methods=['GET'])
+	@swag_from('docs/reset_password.yml')
+	def _reset_password():
+		return {}
+
+	@app.route('/api/register/', methods=['POST'])
+	@swag_from('docs/register.yml')
+	def _register():
+		return {}
+
+	@app.route('/api/profile/', methods=['GET'])
+	@swag_from('docs/profile.yml')
+	def _profile():
+		return {}
+
+	@app.route('/api/update_profile/user/<int:id>', methods=['PATCH'])
+	@swag_from('docs/update_profile.yml')
+	def _update_profile():
+		return {}
+
+	@app.route('/api/register_app_server/', methods=['GET'])
+	@swag_from('docs/register_app_server.yml')
+	def _register_app_server():
+		return {}
+
+	@app.route('/api/stats/', methods=['GET'])
+	@swag_from('docs/stats.yml')
+	def _stats():
+		return {}
+
+	@app.route('/api/status/', methods=['GET'])
+	@swag_from('docs/status.yml')
+	def _status():
+		return {}
 
 	return app
