@@ -4,7 +4,7 @@ services:
     image: $DOCKER_IMAGE
     build: . 
     container_name: auth-server
-    environment:
+    # environment:
       # - FLASK_APP=auth_server
       # - FLASK_ENV=development
       # - FLASK_RUN_HOST=0.0.0.0
