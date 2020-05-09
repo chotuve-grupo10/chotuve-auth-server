@@ -5,9 +5,10 @@ services:
     build: . 
     container_name: auth-server
     environment:
-      - FLASK_APP=auth_server
-      - FLASK_ENV=development
-      - FLASK_RUN_HOST=0.0.0.0
+      # - FLASK_APP=auth_server
+      # - FLASK_ENV=development
+      # - FLASK_RUN_HOST=0.0.0.0
+      # - GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000"
     ports:
       - 8000:8000
     networks:
