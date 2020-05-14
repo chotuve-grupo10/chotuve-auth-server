@@ -4,12 +4,25 @@
 
 ### Opción Docker
 
+#### Docker compose
+
 1. Para poder correr el server dockerizado lo primero que tenemos que hacer es descomentar el 
 seteo de las variables de entorno del docker-compose.yml
 
-2. Ejecutamos ```docker-compose build```
+2. Descomentar variables de entorno en el archivo docker-compose.yml
 
-3. Una vez que buildeó, ejecutamos ```docker-compose up```
+3. En el mismo archivo, en app/image reemplazar la variable de entorno con algun nombre que querramos que tenga la imagen.
+
+4. Ejecutamos ```docker-compose build```
+
+5. Una vez que buildeó, ejecutamos ```docker-compose up```
+
+
+#### Dockerfile
+
+1. Buildear la imagen ejecutando ```docker build . -t auth-server```
+
+2. Corremos el container ejecutando ```docker run -e GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000" -p 8000:8000 auth-server```
 
 ### Opción con virtualenv
 
