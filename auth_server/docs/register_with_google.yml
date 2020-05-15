@@ -1,0 +1,5 @@
+Este servicio permitirá a los usuarios registrarse con Google
+---
+responses:
+  200:
+    description: Returns token

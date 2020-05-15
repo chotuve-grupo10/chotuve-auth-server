@@ -1,0 +1,5 @@
+Este servicio permitirá a los usuarios ingresar a la aplicación con Facebook
+---
+responses:
+  200:
+    description: Returns token
