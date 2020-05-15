@@ -1,0 +1,73 @@
+# import os
+from flask import Blueprint, current_app
+from flasgger import swag_from
+# from requests.auth import HTTPBasicAuth
+# from app_server.http_functions import get_auth_server_login, get_auth_server_register
+
+authentication_bp = Blueprint('authentication', __name__)
+
+### Register methods ###
+
+@authentication_bp.route('/api/register/', methods=['POST'])
+@swag_from('docs/register.yml')
+def _register_user():
+	# data = {'name': 'nicolas',
+	# 		'last_name': 'longo',
+	# 		'email': 'mimail@aol.com',
+	# 		'profile_pic': 'alguna con gatitos'}
+	# auth_login = '/api/login/'
+	# response_auth_server = get_auth_server_register(os.environ.get('AUTH_SERVER_URL') +
+	# 												auth_login, data)
+	# if response_auth_server.status_code == 200:
+	# 	app.logger.debug('Response from auth server register is 200')
+	# 	response = {'Successful registragion'}
+	# 	response.status_code = 200
+	# else:
+	# 	app.logger.debug('Response from auth server register is {0}'.
+	# 					 format(response_auth_server.status_code))
+	# 	response = {'Registration process failed'}
+	# 	response.status_code = 401
+	return {}
+
+@authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
+@swag_from('docs/register_with_facebook.yml')
+def _register_user_using_facebook():
+	return {}
+
+@authentication_bp.route('/api/register_with_google/', methods=['POST'])
+@swag_from('docs/register_with_google.yml')
+def _register_user_using_google():
+	return {}
+
+### Login methods ###
+
+@authentication_bp.route('/api/login/', methods=['GET'])  # esto está conceptualmente bien?
+@swag_from('docs/login.yml')
+def _login_user():
+	# para cuando nos llegue la request desde Androide
+	# user_request = request.headers['AuthenticationHeader']
+	# auth = HTTPBasicAuth('taller', 'notanseguro')
+	# auth_login = '/api/login/'
+	# response_auth_server = get_auth_server_login(os.environ.get('AUTH_SERVER_URL') +
+	# 											 auth_login, auth)
+	# if response_auth_server.status_code == 200:
+	# 	# app.logger.debug('Response from auth server login is 200')
+	# 	response = {'Successful login'}
+	# 	response.status_code = 200
+	# else:
+	# 	# app.logger.debug('Response from auth server login is {0}'.
+	# 	#                  format(response_auth_server.status_code))
+	# 	response = {'Login failed'}
+	# 	response.status_code = 401
+	current_app.logger.debug('Login was successful since it does anything at all')
+	return {'Login': 'was successful'}
+
+@authentication_bp.route('/api/login_with_facebook/', methods=['GET'])
+@swag_from('docs/login_with_facebook.yml')
+def _login_user_using_facebook():
+	return {}
+
+@authentication_bp.route('/api/login_with_google/', methods=['GET'])
+@swag_from('docs/login_with_google.yml')
+def _login_user_using_google():
+	return {}

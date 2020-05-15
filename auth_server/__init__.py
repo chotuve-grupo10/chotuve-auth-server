@@ -3,6 +3,8 @@ import logging
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
+from auth_server.authentication import authentication_bp
+
 # La documentación de Flask dice que SIMPLEJSON funciona más rápido
 # y que Flask está bien integrado con este.
 import simplejson as json
@@ -38,6 +40,8 @@ def create_app(test_config=None):
 
 	app.logger.debug('Log configuration finished')
 	app.logger.info('Auth server running...')
+
+	app.register_blueprint(authentication_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')
