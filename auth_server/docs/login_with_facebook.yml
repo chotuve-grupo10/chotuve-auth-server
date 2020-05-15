@@ -1,5 +1,6 @@
-Este servicio permitirá a los usuarios ingresar a la aplicación con Facebook
+Recibe una solicitud de login utilizando Facebook
 ---
+# parameters:
 responses:
   200:
-    description: Returns token
+    description: Login solicitation using Facebook Account

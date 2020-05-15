@@ -1,5 +1,6 @@
-Este servicio permitirá a los usuarios ingresar a la aplicación con Google
+Recibe una solicitud de login utilizando Google
 ---
+# parameters:
 responses:
   200:
-    description: Returns token
+    description: Login solicitation using Google Account

@@ -1,5 +1,6 @@
-Este servicio permitirá a los usuarios registrarse con Facebook
+Recibe una solicitud de registro utilizando Facebook
 ---
+# parameters:
 responses:
   200:
-    description: Returns token
+    description: Register solicitation using Facebook Account

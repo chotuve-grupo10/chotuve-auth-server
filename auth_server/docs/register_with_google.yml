@@ -1,5 +1,6 @@
-Este servicio permitirá a los usuarios registrarse con Google
+Recibe una solicitud de registro utilizando Google
 ---
+# parameters:
 responses:
   200:
-    description: Returns token
+    description: Register solicitation using Google Account
