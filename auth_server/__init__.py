@@ -3,11 +3,11 @@ import logging
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
+import simplejson as json
 from auth_server.authentication import authentication_bp
 
 # La documentación de Flask dice que SIMPLEJSON funciona más rápido
 # y que Flask está bien integrado con este.
-import simplejson as json
 
 def create_app(test_config=None):
 	# create and configure the app
@@ -79,16 +79,6 @@ def create_app(test_config=None):
 	@app.route('/api/login/', methods=['GET'])
 	@swag_from('docs/login.yml')
 	def _login():
-		return {}
-
-	@app.route('/api/forgot_password/', methods=['GET'])
-	@swag_from('docs/forgot_password.yml')
-	def _forgot_password():
-		return {}
-
-	@app.route('/api/reset_password/', methods=['GET'])
-	@swag_from('docs/reset_password.yml')
-	def _reset_password():
 		return {}
 
 	@app.route('/api/register/', methods=['POST'])

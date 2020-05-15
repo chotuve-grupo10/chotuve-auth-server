@@ -1,10 +1,16 @@
 # import os
+import firebase_admin
+from firebase_admin import credentials
 from flask import Blueprint, current_app
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
 
 authentication_bp = Blueprint('authentication', __name__)
+
+# TODO: puede ser variable de entorno
+cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
+firebase_app = firebase_admin.initialize_app(cred)
 
 ### Register methods ###
 
@@ -70,4 +76,16 @@ def _login_user_using_facebook():
 @authentication_bp.route('/api/login_with_google/', methods=['GET'])
 @swag_from('docs/login_with_google.yml')
 def _login_user_using_google():
+	return {}
+
+#### Updating methods ###
+
+@authentication_bp.route('/api/forgot_password/', methods=['GET'])
+@swag_from('docs/forgot_password.yml')
+def _forgot_password():
+	return {}
+
+@authentication_bp.route('/api/reset_password/', methods=['GET'])
+@swag_from('docs/reset_password.yml')
+def _reset_password():
 	return {}
