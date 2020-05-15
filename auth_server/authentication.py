@@ -1,7 +1,6 @@
 # import os
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import auth
 from flask import Blueprint, current_app
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
@@ -18,17 +17,6 @@ firebase_app = firebase_admin.initialize_app(cred)
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-	current_app.logger.debug('Pedido de register')
-	user = auth.create_user(
-    email='user@example.com',
-	uid='user@example.com',
-    email_verified=False,
-    phone_number='+15555550100',
-    password='secretPassword',
-    display_name='John Doe',
-    photo_url='http://www.example.com/12345678/photo.png',
-    disabled=False)
-	current_app.logger.debug('Sucessfully created new user: {0}'.format(user.uid))
 	# data = {'name': 'nicolas',
 	# 		'last_name': 'longo',
 	# 		'email': 'mimail@aol.com',
