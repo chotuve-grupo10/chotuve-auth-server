@@ -1,5 +1,6 @@
-FROM python:alpine3.7
+FROM python:3
 COPY . .
+RUN apt-get update && apt-get install -y python3-pip python3-dev
 RUN pip install --upgrade pip
 RUN pip install -e .
 EXPOSE 8000
