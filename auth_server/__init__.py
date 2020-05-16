@@ -15,7 +15,8 @@ def create_app(test_config=None):
 	app = Flask(__name__, instance_relative_config=True)
 
 	# Parametro que no estamos usando actualmente en from_mapping
-	client = postgresql.open(os.environ.get('DATABASE_URL'))
+	client = postgresql.open(os.environ.get('DATABASE_URL'),
+							 server_encoding="utf-8")
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	# const client = new Client({
 	#   connectionString: process.env.DATABASE_URL,

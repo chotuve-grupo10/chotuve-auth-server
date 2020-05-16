@@ -12,6 +12,7 @@ setup(
         'pytest',
         'flasgger',
         'gunicorn',
-        'firebase_admin'
+        'firebase_admin',
+        'py-postgresql'
     ],
 )
