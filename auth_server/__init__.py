@@ -23,7 +23,12 @@ def create_app(test_config=None):
 	client = app.client
 	cursor = client.cursor()
 	cursor.execute("CREATE TABLE Users ( email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
-	cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
+	#cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
+	client.commit()
+
+	# Close communication with the database
+	cursor.close()
+	client.close()
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	# const client = new Client({
 	#   connectionString: process.env.DATABASE_URL,
