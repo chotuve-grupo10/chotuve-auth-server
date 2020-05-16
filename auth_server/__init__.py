@@ -1,6 +1,6 @@
 import os
 import logging
-import psycopg2
+import psycopg2 as psql
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
@@ -15,7 +15,15 @@ def create_app(test_config=None):
 	app = Flask(__name__, instance_relative_config=True)
 
 	# Parametro que no estamos usando actualmente en from_mapping
-	conn = psycopg2.connect(dbname="postgres", user="postgres", password="postgres", host="psql-auth", port="5432")
+	app.client = psql.connect(dbname="postgres",
+							  user="postgres",
+							  password="postgres",
+							  host="psql-auth",
+							  port="5432")
+	client = app.client
+	cursor = client.cursor()
+	cursor.execute("CREATE TABLE Users ( email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
+	cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	# const client = new Client({
 	#   connectionString: process.env.DATABASE_URL,
