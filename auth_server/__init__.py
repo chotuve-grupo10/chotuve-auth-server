@@ -6,6 +6,7 @@ from flasgger import Swagger
 from flasgger import swag_from
 import simplejson as json
 from auth_server.authentication import authentication_bp
+# from auth_server.db_functions import initialize_db
 
 # La documentación de Flask dice que SIMPLEJSON funciona más rápido
 # y que Flask está bien integrado con este.
@@ -20,15 +21,17 @@ def create_app(test_config=None):
 							  password="postgres",
 							  host="psql-auth",
 							  port="5432")
+
+	#initialize_db(app.client)
 	client = app.client
 	cursor = client.cursor()
-	cursor.execute("CREATE TABLE Users ( email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
-	#cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
+	cursor.execute(
+		"CREATE TABLE Users (email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
+	# cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
 	client.commit()
-
 	# Close communication with the database
-	cursor.close()
 	client.close()
+
 	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
 	# const client = new Client({
 	#   connectionString: process.env.DATABASE_URL,
