@@ -13,6 +13,6 @@ setup(
         'flasgger',
         'gunicorn',
         'firebase_admin',
-        'py-postgresql'
+        'psycopg2'
     ],
 )
