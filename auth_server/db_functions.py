@@ -2,7 +2,7 @@ from flask import current_app
 from psycopg2 import errors as psql_errors
 import logging
 
-create_table_command = "CREATE TABLE Users (email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255) )"
+create_table_command = "CREATE TABLE Users (email VARCHAR(255) PRIMARY KEY , first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255));"
 
 logger = logging.getLogger('gunicorn.error')
 
@@ -12,7 +12,6 @@ def initialize_db():
 		cursor = client.cursor()
 		try:
 			cursor.execute(create_table_command)
-			#cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
 			client.commit()
 			cursor.close()
 			logger.debug('Table Users was created successfully')
@@ -37,3 +36,20 @@ def table_exists(client, table_name):
 		client.rollback()
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False
+
+def insert_into_users_db(client, user_information):
+
+	cursor = client.cursor()
+	try:
+		cursor.execute(
+			"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{name}','{last_name}','{phone_number}','{profile_pic}');".format(email=user_information['email'],
+																																										   name=user_information['name'],
+																																										   last_name=user_information['last_name'],
+																																										   phone_number=user_information['phone_number'],
+																																										   profile_pic=user_information['profile_pic']))
+		client.commit()
+		cursor.close()
+		logger.debug('User with email {0} was inserted properly'.format(user_information['email']))
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e} inserting new user'.format(e=e))
