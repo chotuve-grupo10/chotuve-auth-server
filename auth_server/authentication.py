@@ -1,4 +1,5 @@
 # import os
+import logging
 import firebase_admin
 from firebase_admin import credentials
 from flask import Blueprint, current_app
@@ -7,6 +8,7 @@ from flasgger import swag_from
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
 
 authentication_bp = Blueprint('authentication', __name__)
+logger = logging.getLogger('gunicorn.error')
 
 # TODO: puede ser variable de entorno
 cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
@@ -17,13 +19,22 @@ firebase_app = firebase_admin.initialize_app(cred)
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-	# data = {'name': 'nicolas',
-	# 		'last_name': 'longo',
-	# 		'email': 'mimail@aol.com',
-	# 		'profile_pic': 'alguna con gatitos'}
-	# auth_login = '/api/login/'
-	# response_auth_server = get_auth_server_register(os.environ.get('AUTH_SERVER_URL') +
-	# 												auth_login, data)
+
+	body = {'name': 'usuario',
+			'last_name': 'primero',
+			'email': 'primerusuario@aol.com',
+			'phone_number': '47777777',
+			'profile_pic': 'alguna con gatitos'}
+
+	client = current_app.client
+	cursor = client.cursor()
+	cursor.execute(
+		"INSERT INTO Users VALUES(body['email'], body['name'], body['last_name'], body['phone_number'], body['profile_pic']);")
+	client.commit()
+	cursor.close()
+	logger.debug('Was able to api register')
+	return {'Result': 'Registration was successfull'}
+
 	# if response_auth_server.status_code == 200:
 	# 	app.logger.debug('Response from auth server register is 200')
 	# 	response = {'Successful registragion'}
@@ -33,7 +44,6 @@ def _register_user():
 	# 					 format(response_auth_server.status_code))
 	# 	response = {'Registration process failed'}
 	# 	response.status_code = 401
-	return {}
 
 @authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
 @swag_from('docs/register_with_facebook.yml')

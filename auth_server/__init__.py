@@ -41,7 +41,7 @@ def create_app(test_config=None):
 	except psql_errors.DuplicateTable:
 		app.logger.info('Table Users already exists')
 	# Close communication with the database
-	client.close()
+	# client.close()
 
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
@@ -70,7 +70,8 @@ def create_app(test_config=None):
 	app.logger.info('Auth server running...')
 
 	# Registro de blueprints que encapsulan comportamiento:
-	app.register_blueprint(authentication_bp)
+	with app.app_context():
+		app.register_blueprint(authentication_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')
