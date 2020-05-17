@@ -24,12 +24,16 @@ def _register_user():
 			'last_name': 'primero',
 			'email': 'primerusuario@aol.com',
 			'phone_number': '47777777',
-			'profile_pic': 'alguna con gatitos'}
+			'profile_pic': 'photocongatitos01.png'}
 
 	client = current_app.client
 	cursor = client.cursor()
 	cursor.execute(
-		"INSERT INTO Users VALUES(body['email'], body['name'], body['last_name'], body['phone_number'], body['profile_pic']);")
+		"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{name}','{last_name}','{phone_number}','{profile_pic}');".format(email=body['email'],
+																										 name=body['name'],
+																										 last_name=body['last_name'],
+																										 phone_number=body['phone_number'],
+																										 profile_pic=body['profile_pic']))
 	client.commit()
 	cursor.close()
 	logger.debug('Was able to api register')

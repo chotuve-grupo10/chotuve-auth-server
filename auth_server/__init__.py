@@ -39,6 +39,7 @@ def create_app(test_config=None):
 		client.commit()
 		app.logger.info('Table Users was created successfully')
 	except psql_errors.DuplicateTable:
+		client.rollback()
 		app.logger.info('Table Users already exists')
 	# Close communication with the database
 	# client.close()
