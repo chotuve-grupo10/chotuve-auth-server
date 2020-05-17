@@ -23,27 +23,11 @@ def _register_user():
 
 	data = request.json
 
-	body = {'name': data['first name'],
-			'last_name': data['last name'],
-			'email': data['email'],
-			'phone_number': data['phone number'],
-			'profile_pic': data['profile picture']}
-
 	with current_app.app_context():
 		# TODO have something returned?
-		insert_into_users_db(current_app.client, body)
+		result, status_code = insert_into_users_db(current_app.client, data)
 	logger.debug('User was inserted')
-	return {'Result': 'Registration was successfull'}
-
-	# if response_auth_server.status_code == 200:
-	# 	app.logger.debug('Response from auth server register is 200')
-	# 	response = {'Successful registragion'}
-	# 	response.status_code = 200
-	# else:
-	# 	app.logger.debug('Response from auth server register is {0}'.
-	# 					 format(response_auth_server.status_code))
-	# 	response = {'Registration process failed'}
-	# 	response.status_code = 401
+	return result, status_code
 
 @authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
 @swag_from('docs/register_with_facebook.yml')
