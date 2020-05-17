@@ -1,51 +1,56 @@
 import os
 import logging
 import psycopg2 as psql
+from psycopg2 import errors as psql_errors
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
+from urllib.parse import urlparse
 import simplejson as json
 from auth_server.authentication import authentication_bp
 # from auth_server.db_functions import initialize_db
-
-# La documentación de Flask dice que SIMPLEJSON funciona más rápido
-# y que Flask está bien integrado con este.
 
 def create_app(test_config=None):
 	# create and configure the app
 	app = Flask(__name__, instance_relative_config=True)
 
-	# Parametro que no estamos usando actualmente en from_mapping
-	app.client = psql.connect(dbname="postgres",
-							  user="postgres",
-							  password="postgres",
-							  host="psql-auth",
-							  port="5432")
+	parameters = urlparse(os.environ.get('DATABASE_URL'))
+	username = parameters.username
+	password = parameters.password
+	database = parameters.path[1:]
+	hostname = parameters.hostname
+	app.client = psql.connect(
+		database=database,
+		user=username,
+		password=password,
+		host=hostname)
 
-	#initialize_db(app.client)
+	# TODO: no funciona el mismo código al ser encapsulado. Tira un error cuando
+	#  tiene que crear la tabla
+	# with app.app_context():
+	# 	initialize_db()
+
 	client = app.client
 	cursor = client.cursor()
-	cursor.execute(
-		"CREATE TABLE Users (email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
-	# cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
-	client.commit()
+	try:
+		cursor.execute(
+			"CREATE TABLE Users (email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
+		# cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
+		client.commit()
+		app.logger.info('Table Users was created successfully')
+	except psql_errors.DuplicateTable:
+		app.logger.info('Table Users already exists')
 	# Close communication with the database
 	client.close()
 
-	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
-	# const client = new Client({
-	#   connectionString: process.env.DATABASE_URL,
-	#   query_timeout: 1000,
-	#   statement_timeout: 1000
-	# });
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
 
 	if test_config is None:
-	    # load the instance config, if it exists, when not testing
+		# load the instance config, if it exists, when not testing
 		app.config.from_pyfile('config.py', silent=True)
 	else:
-	    # load the test config if passed in
+		# load the test config if passed in
 		app.config.from_mapping(test_config)
 
 	# ensure the instance folder exists
@@ -64,6 +69,7 @@ def create_app(test_config=None):
 	app.logger.debug('Log configuration finished')
 	app.logger.info('Auth server running...')
 
+	# Registro de blueprints que encapsulan comportamiento:
 	app.register_blueprint(authentication_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
@@ -92,23 +98,11 @@ def create_app(test_config=None):
 	def _about():
 		return 'This is Authorization Server for chotuve-10. Still in construction'
 
-
 	@app.route('/')
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
 
 	### Métodos no implementados aún ###
-
-	@app.route('/api/login/', methods=['GET'])
-	@swag_from('docs/login.yml')
-	def _login():
-		return {}
-
-	@app.route('/api/register/', methods=['POST'])
-	@swag_from('docs/register.yml')
-	def _register():
-		return {}
-
 	@app.route('/api/profile/', methods=['GET'])
 	@swag_from('docs/profile.yml')
 	def _profile():
