@@ -1,22 +1,25 @@
 Este servicio permitirá a los usuarios darse de alta en el sistema
 ---
-parameters:
-  - name: complete name
-    in: query
-    type: string
-    required: true
-  - name: phone
-    in: query
-    type: int
-    required: true
-  - name: e-mail
-    in: query
-    type: string
-    required: true
-  - name: profile photo
-    in: query
+definitions:
+  User:
     type: object
-    required: true
+    properties:
+      email:
+        type: string
+      first name:
+        type: string
+      last name:
+        type: string
+      phone number:
+        type: string
+      profile picture:
+        type: string
+parameters:
+  - in: body
+    name: user
+    description: The user to create.
+    schema:
+      $ref: '#/definitions/User'
 responses:
   200:
     description: Returns token

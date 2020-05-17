@@ -11,6 +11,8 @@ setup(
         'simplejson',
         'pytest',
         'flasgger',
-        'gunicorn'
+        'gunicorn',
+        'firebase_admin',
+        'psycopg2'
     ],
 )

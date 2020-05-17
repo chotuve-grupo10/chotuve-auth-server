@@ -1,26 +1,41 @@
 import os
 import logging
+from urllib.parse import urlparse
+import psycopg2 as psql
+from psycopg2 import errors as psql_errors
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
-# La documentación de Flask dice que SIMPLEJSON funciona más rápido
-# y que Flask está bien integrado con este.
 import simplejson as json
+from auth_server.authentication import authentication_bp
+from auth_server.db_functions import initialize_db
 
 def create_app(test_config=None):
 	# create and configure the app
 	app = Flask(__name__, instance_relative_config=True)
 
-	# Parametro que no estamos usando actualmente en from_mapping
-	# DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
+	parameters = urlparse(os.environ.get('DATABASE_URL'))
+	username = parameters.username
+	password = parameters.password
+	database = parameters.path[1:]
+	hostname = parameters.hostname
+	app.client = psql.connect(
+		database=database,
+		user=username,
+		password=password,
+		host=hostname)
+
+	with app.app_context():
+		initialize_db()
+
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
 
 	if test_config is None:
-	    # load the instance config, if it exists, when not testing
+		# load the instance config, if it exists, when not testing
 		app.config.from_pyfile('config.py', silent=True)
 	else:
-	    # load the test config if passed in
+		# load the test config if passed in
 		app.config.from_mapping(test_config)
 
 	# ensure the instance folder exists
@@ -38,6 +53,10 @@ def create_app(test_config=None):
 
 	app.logger.debug('Log configuration finished')
 	app.logger.info('Auth server running...')
+
+	# Registro de blueprints que encapsulan comportamiento:
+	with app.app_context():
+		app.register_blueprint(authentication_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')
@@ -65,33 +84,11 @@ def create_app(test_config=None):
 	def _about():
 		return 'This is Authorization Server for chotuve-10. Still in construction'
 
-
 	@app.route('/')
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
 
 	### Métodos no implementados aún ###
-
-	@app.route('/api/login/', methods=['GET'])
-	@swag_from('docs/login.yml')
-	def _login():
-		return {}
-
-	@app.route('/api/forgot_password/', methods=['GET'])
-	@swag_from('docs/forgot_password.yml')
-	def _forgot_password():
-		return {}
-
-	@app.route('/api/reset_password/', methods=['GET'])
-	@swag_from('docs/reset_password.yml')
-	def _reset_password():
-		return {}
-
-	@app.route('/api/register/', methods=['POST'])
-	@swag_from('docs/register.yml')
-	def _register():
-		return {}
-
 	@app.route('/api/profile/', methods=['GET'])
 	@swag_from('docs/profile.yml')
 	def _profile():
