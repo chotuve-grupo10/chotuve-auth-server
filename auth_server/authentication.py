@@ -6,6 +6,7 @@ from flask import Blueprint, current_app
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
+from auth_server.db_functions import insert_into_users_db
 
 authentication_bp = Blueprint('authentication', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -26,16 +27,9 @@ def _register_user():
 			'phone_number': '47777777',
 			'profile_pic': 'photocongatitos01.png'}
 
-	client = current_app.client
-	cursor = client.cursor()
-	cursor.execute(
-		"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{name}','{last_name}','{phone_number}','{profile_pic}');".format(email=body['email'],
-																										 name=body['name'],
-																										 last_name=body['last_name'],
-																										 phone_number=body['phone_number'],
-																										 profile_pic=body['profile_pic']))
-	client.commit()
-	cursor.close()
+	with current_app.app_context():
+		# TODO have something returned?
+		insert_into_users_db(current_app.client, body)
 	logger.debug('First user was inserted')
 	return {'Result': 'Registration was successfull'}
 

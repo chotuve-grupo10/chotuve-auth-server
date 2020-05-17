@@ -36,3 +36,20 @@ def table_exists(client, table_name):
 		client.rollback()
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False
+
+def insert_into_users_db(client, user_information):
+
+	cursor = client.cursor()
+	try:
+		cursor.execute(
+			"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{name}','{last_name}','{phone_number}','{profile_pic}');".format(email=user_information['email'],
+																																										   name=user_information['name'],
+																																										   last_name=user_information['last_name'],
+																																										   phone_number=user_information['phone_number'],
+																																										   profile_pic=user_information['profile_pic']))
+		client.commit()
+		cursor.close()
+		logger.debug('User with email {0} was inserted properly'.format(user_information['email']))
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e} inserting new user'.format(e=e))
