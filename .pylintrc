@@ -12,4 +12,5 @@ disable=
     invalid-name,
     line-too-long,
     broad-except,
-    logging-format-interpolation
+    logging-format-interpolation,
+    no-member
