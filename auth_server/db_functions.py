@@ -42,14 +42,25 @@ def insert_into_users_db(client, user_information):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{name}','{last_name}','{phone_number}','{profile_pic}');".format(email=user_information['email'],
-																																										   name=user_information['name'],
-																																										   last_name=user_information['last_name'],
-																																										   phone_number=user_information['phone_number'],
-																																										   profile_pic=user_information['profile_pic']))
+			"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}');".format(email=user_information['email'],
+																																										   first_name=user_information['first name'],
+																																										   last_name=user_information['last name'],
+																																										   phone_number=user_information['phone number'],
+																																										   profile_picture=user_information['profile picture']))
 		client.commit()
-		cursor.close()
-		logger.debug('User with email {0} was inserted properly'.format(user_information['email']))
+		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
+		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+		status_code = 201		# Created
+	except psql_errors.UniqueViolation:
+		client.rollback()
+		logger.error('This user already exists!')
+		result = {'Registration': 'This user already exists!'}
+		status_code = 409		# Conflict
 	except Exception as e:
 		client.rollback()
-		logger.error('Error {e} inserting new user'.format(e=e))
+		logger.error('Error {e}. Could not insert new user'.format(e=e))
+		result = {'Registration': 'Error {e}. Could not insert new user'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
