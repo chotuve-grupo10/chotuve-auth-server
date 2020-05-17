@@ -1,6 +1,6 @@
+import logging
 from flask import current_app
 from psycopg2 import errors as psql_errors
-import logging
 
 create_table_command = "CREATE TABLE Users (email VARCHAR(255) PRIMARY KEY , first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255));"
 

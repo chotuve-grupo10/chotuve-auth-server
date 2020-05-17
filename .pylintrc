@@ -9,4 +9,7 @@ disable=
     logging-not-lazy,
     too-many-locals,
     C0330, #: Wrong continued indentation
-    invalid-name
+    invalid-name,
+    line-too-long,
+    broad-except,
+    logging-format-interpolation
