@@ -2,7 +2,12 @@ import logging
 from flask import current_app
 from psycopg2 import errors as psql_errors
 
-create_table_command = "CREATE TABLE Users (email VARCHAR(255) PRIMARY KEY , first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255));"
+create_table_command = """CREATE TABLE Users (
+						email VARCHAR(255) PRIMARY KEY ,
+						first_name VARCHAR(255) NOT NULL,
+						last_name VARCHAR(255) NOT NULL,
+						phone_number VARCHAR(255) NOT NULL,
+						profile_picture VARCHAR(255));"""
 
 logger = logging.getLogger('gunicorn.error')
 
@@ -42,11 +47,14 @@ def insert_into_users_db(client, user_information):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture) VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}');".format(email=user_information['email'],
-																																										   first_name=user_information['first name'],
-																																										   last_name=user_information['last name'],
-																																										   phone_number=user_information['phone number'],
-																																										   profile_picture=user_information['profile picture']))
+			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture)
+				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}');"""
+					.format(email=user_information['email'],
+					first_name=user_information['first name'],
+					last_name=user_information['last name'],
+					phone_number=user_information['phone number'],
+					profile_picture=user_information['profile picture']))
+
 		client.commit()
 		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
 		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
