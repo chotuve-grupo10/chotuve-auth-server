@@ -2,7 +2,7 @@
 import logging
 import firebase_admin
 from firebase_admin import credentials
-from flask import Blueprint, current_app
+from flask import Blueprint, current_app, request
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -21,16 +21,18 @@ firebase_app = firebase_admin.initialize_app(cred)
 @swag_from('docs/register.yml')
 def _register_user():
 
-	body = {'name': 'usuario',
-			'last_name': 'primero',
-			'email': 'primerusuario@aol.com',
-			'phone_number': '47777777',
-			'profile_pic': 'photocongatitos01.png'}
+	data = request.json
+
+	body = {'name': data['first name'],
+			'last_name': data['last name'],
+			'email': data['email'],
+			'phone_number': data['phone number'],
+			'profile_pic': data['profile picture']}
 
 	with current_app.app_context():
 		# TODO have something returned?
 		insert_into_users_db(current_app.client, body)
-	logger.debug('First user was inserted')
+	logger.debug('User was inserted')
 	return {'Result': 'Registration was successfull'}
 
 	# if response_auth_server.status_code == 200:
