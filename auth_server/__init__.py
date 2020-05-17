@@ -1,11 +1,11 @@
 import os
 import logging
+from urllib.parse import urlparse
 import psycopg2 as psql
 from psycopg2 import errors as psql_errors
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
-from urllib.parse import urlparse
 import simplejson as json
 from auth_server.authentication import authentication_bp
 from auth_server.db_functions import initialize_db
@@ -25,24 +25,8 @@ def create_app(test_config=None):
 		password=password,
 		host=hostname)
 
-	# TODO: no funciona el mismo código al ser encapsulado. Tira un error cuando
-	#  tiene que crear la tabla
 	with app.app_context():
 		initialize_db()
-
-	# client = app.client
-	# cursor = client.cursor()
-	# try:
-	# 	cursor.execute(
-	# 		"CREATE TABLE Users (email VARCHAR(255) NOT NULL, first_name VARCHAR(255) NOT NULL, last_name VARCHAR(255) NOT NULL, phone_number VARCHAR(255) NOT NULL, profile_picture VARCHAR(255))")
-	# 	# cursor.execute("ALTER TABLE Users PRIMARY KEY (email);")
-	# 	client.commit()
-	# 	app.logger.info('Table Users was created successfully')
-	# except psql_errors.DuplicateTable:
-	# 	client.rollback()
-	# 	app.logger.info('Table Users already exists')
-	# Close communication with the database
-	# client.close()
 
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)

@@ -8,4 +8,5 @@ disable=
     fixme,
     logging-not-lazy,
     too-many-locals,
-    C0330 #: Wrong continued indentation
+    C0330, #: Wrong continued indentation
+    invalid-name
