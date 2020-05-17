@@ -26,13 +26,12 @@ def initialize_db():
 
 def table_exists(client, table_name):
 
+	cursor = client.cursor()
 	try:
-		cursor = client.cursor()
 		cursor.execute("SELECT exists(SELECT 1 from {0})".format(table_name))
-		rowcount = cursor.rowcount
+		client.commit()
 		cursor.close()
 		return True
-	# except psql_errors.UndefinedTable:
 	except psql_errors.lookup("42P01"):
 		cursor.close()
 		client.rollback()
