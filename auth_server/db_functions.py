@@ -35,5 +35,6 @@ def table_exists(client, table_name):
 	# except psql_errors.UndefinedTable:
 	except psql_errors.lookup("42P01"):
 		cursor.close()
+		client.rollback()
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False

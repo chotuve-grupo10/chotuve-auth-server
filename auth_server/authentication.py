@@ -36,7 +36,7 @@ def _register_user():
 																										 profile_pic=body['profile_pic']))
 	client.commit()
 	cursor.close()
-	logger.debug('Was able to api register')
+	logger.debug('First user was inserted')
 	return {'Result': 'Registration was successfull'}
 
 	# if response_auth_server.status_code == 200:
