@@ -80,3 +80,27 @@ def insert_into_users_db(client, user_information):
 
 	cursor.close()
 	return result, status_code
+
+def get_user(client, mail):
+
+	cursor = client.cursor()
+	logger.debug('Looking for user {user}'.format(user=mail))
+	try:
+		cursor.execute("SELECT * FROM users WHERE email = '{mail}'".format(mail=mail))
+		row = cursor.fetchone()
+		if row is not None:
+			logger.debug('User found')
+			result = {'Login': 'user found'}
+			status_code = 200
+		else:
+			logger.debug('User NOT found')
+			result = {'Login': 'user NOT found'}
+			status_code = 404
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not find user'.format(e=e))
+		result = {'Registration': 'Error {e}. Problems finding user'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code, row
