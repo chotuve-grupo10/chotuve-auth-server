@@ -7,7 +7,9 @@ create_table_command = """CREATE TABLE Users (
 						first_name VARCHAR(255) NOT NULL,
 						last_name VARCHAR(255) NOT NULL,
 						phone_number VARCHAR(255) NOT NULL,
-						profile_picture VARCHAR(255));"""
+						profile_picture VARCHAR(255),
+						hash VARCHAR(255) NOT NULL,
+						salt VARCHAR(255) NOT NULL);"""
 
 logger = logging.getLogger('gunicorn.error')
 
