@@ -1,6 +1,8 @@
 import logging
+import hashlib
 from flask import current_app
 from psycopg2 import errors as psql_errors
+from auth_server.random_string import *
 
 create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
@@ -46,16 +48,20 @@ def table_exists(client, table_name):
 
 def insert_into_users_db(client, user_information):
 
+	sal = random_string(6)
+	pimienta = random_string(1)
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture)
-				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}');"""
+			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt)
+				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}');"""
 					.format(email=user_information['email'],
 					first_name=user_information['first name'],
 					last_name=user_information['last name'],
 					phone_number=user_information['phone number'],
-					profile_picture=user_information['profile picture']))
+					profile_picture=user_information['profile picture'],
+					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
+					salt=sal))
 
 		client.commit()
 		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
