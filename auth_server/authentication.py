@@ -8,6 +8,7 @@ from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
 from auth_server.db_functions import *
+from auth_server.token_functions import generate_auth_token
 
 authentication_bp = Blueprint('authentication', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -34,7 +35,6 @@ def _register_user():
 	data = request.json
 
 	with current_app.app_context():
-		# TODO have something returned?
 		result, status_code = insert_into_users_db(current_app.client, data)
 	logger.debug('User was inserted')
 	return result, status_code
@@ -61,7 +61,9 @@ def _login_user():
 		if status_code == 200:
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
-				result = {'Token': 'tu token'}
+				token = generate_auth_token(data);
+				logger.debug('This is the token {0}'.format(token))
+				result = {'Token': '{0}'.format(token)}
 			else:
 				logger.debug('La password es incorrecta')
 				result = {'Login': 'invalid password'}
