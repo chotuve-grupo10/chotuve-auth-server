@@ -14,6 +14,6 @@ setup(
         'gunicorn',
         'firebase_admin',
         'psycopg2',
-        'pyjwt'
+        'pyJWT'
     ],
 )
