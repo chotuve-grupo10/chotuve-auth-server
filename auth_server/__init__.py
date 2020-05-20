@@ -9,6 +9,7 @@ from flasgger import swag_from
 import simplejson as json
 from auth_server.authentication import authentication_bp
 from auth_server.db_functions import initialize_db
+from auth_server.token_functions import *
 
 def create_app(test_config=None):
 	# create and configure the app
@@ -92,7 +93,9 @@ def create_app(test_config=None):
 	@app.route('/api/profile/', methods=['GET'])
 	@swag_from('docs/profile.yml')
 	def _profile():
-		return {}
+		jwt_token = request.headers.get('authorization', None)
+		result, status_code = validate_token(jwt_token)
+		return result, status_code
 
 	@app.route('/api/update_profile/user/<int:id>', methods=['PATCH'])
 	@swag_from('docs/update_profile.yml')
