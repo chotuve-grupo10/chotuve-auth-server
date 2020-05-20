@@ -37,8 +37,10 @@ pluggy==0.13.1
 protobuf==3.11.3
 psycopg2==2.8.5
 py==1.8.1
+py-postgresql==1.2.1
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
+PyJWT==1.7.1
 pylint==2.5.0
 pyparsing==2.4.7
 pyrsistent==0.16.0
