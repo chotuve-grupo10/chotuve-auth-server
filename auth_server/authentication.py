@@ -8,7 +8,7 @@ from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
 from auth_server.db_functions import *
-from auth_server.token_functions import generate_auth_token
+from auth_server.token_functions import *
 
 authentication_bp = Blueprint('authentication', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -61,7 +61,7 @@ def _login_user():
 		if status_code == 200:
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
-				token = generate_auth_token(data);
+				token = generate_auth_token2(data)
 				logger.debug('This is the token {0}'.format(token))
 				result = {'Token': '{0}'.format(token)}
 			else:

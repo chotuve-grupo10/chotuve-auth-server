@@ -1,10 +1,19 @@
-Este servicio permitirá a los usuarios poder ingresar al sistema
+Este servicio permitirá consultar el perfil de un usuario
 ---
+components:
+  securitySchemes:
+    bearerAuth:           
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    
+security:
+  - bearerAuth: []
 parameters:
-  - name: user id
-    in: query
+  - in: header
+    name: authorization
+    description: bearer token
     type: string
     required: true
 responses:
   200:
-    description: Returns token
+    description: Returns user information
