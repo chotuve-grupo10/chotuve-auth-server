@@ -13,6 +13,7 @@ setup(
         'flasgger',
         'gunicorn',
         'firebase_admin',
-        'psycopg2'
+        'psycopg2',
+        'pyjwt'
     ],
 )

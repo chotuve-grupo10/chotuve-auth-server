@@ -61,9 +61,9 @@ def _login_user():
 		if status_code == 200:
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
-				token = generate_auth_token2(data)
+				token = generate_auth_token(data)
 				logger.debug('This is the token {0}'.format(token))
-				result = {'Token': '{0}'.format(token)}
+				result = {'Token': token}
 			else:
 				logger.debug('La password es incorrecta')
 				result = {'Login': 'invalid password'}
@@ -96,6 +96,16 @@ def _login_user_using_facebook():
 @swag_from('docs/login_with_google.yml')
 def _login_user_using_google():
 	return {}
+
+### Validating token methods ####
+
+@authentication_bp.route('/api/validate_token/', methods=['GET'])
+@swag_from('docs/validate_token.yml')
+def _validate_token():
+	jwt_token = request.headers.get('authorization', None)
+	result, status_code = validate_token(jwt_token)
+	return result, status_code
+
 
 #### Updating methods ###
 
