@@ -2,12 +2,13 @@ import logging
 from datetime import datetime, timedelta
 import jwt
 
+# TODO: env var this!
 JWT_SECRET = 'secret'
 JWT_ALGORITHM = 'HS256'
 
 logger = logging.getLogger('gunicorn.error')
 
-def generate_auth_token(user_data, expiration = 1000):
+def generate_auth_token(user_data, expiration=1000):
 	payload = {
         'user_id': user_data['email'],
         'exp': datetime.utcnow() + timedelta(seconds=expiration)
@@ -25,11 +26,10 @@ def validate_token(token):
 			user = payload['user_id']
 			result = {'Message': 'token valido para user {0}'.format(user)}
 			status_code = 200
-		except (jwt.DecodeError):
+		except jwt.DecodeError:
 			result = {'Message': 'invalid token'}
 			status_code = 401
-		except (jwt.ExpiredSignatureError):
+		except jwt.ExpiredSignatureError:
 			result = {'Message': 'expired token'}
 			status_code = 401
-	
 	return result, status_code
