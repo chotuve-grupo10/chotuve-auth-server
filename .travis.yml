@@ -15,8 +15,8 @@ install:
 
 script:
   - python -m pytest
-  - pylint auth_server
-  - pylint tests/test_auth_server.py
+  - PYTHONPATH=$(pwd) pylint auth_server
+  - PYTHONPATH=$(pwd) pylint tests/test_auth_server.py
   - docker-compose build
 
 before_deploy:

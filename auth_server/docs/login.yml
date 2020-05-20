@@ -1,5 +1,19 @@
 Este servicio permitirá a los usuarios poder ingresar al sistema
 ---
+definitions:
+  UserLogin:
+    type: object
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+parameters:
+  - in: body
+    name: user
+    description: User to login.
+    schema:
+      $ref: '#/definitions/UserLogin'
 responses:
   200:
     description: Returns token

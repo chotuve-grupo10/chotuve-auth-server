@@ -1,4 +1,4 @@
-Este servicio permitirá consultar el perfil de un usuario
+Este es un método para recibir un token y validarlo
 ---
 components:
   securitySchemes:
@@ -16,4 +16,4 @@ parameters:
     required: true
 responses:
   200:
-    description: Returns user information
+    description: Token validity.

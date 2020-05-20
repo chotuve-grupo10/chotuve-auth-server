@@ -2,5 +2,17 @@
 indent-string=\t
 
 [MASTER]
+load-plugins=pylintplugins
 disable=
     C0111, # missing docstring
+    fixme,
+    logging-not-lazy,
+    too-many-locals,
+    C0330, #: Wrong continued indentation
+    invalid-name,
+    line-too-long,
+    broad-except,
+    logging-format-interpolation,
+    no-member,
+    wildcard-import,
+    unused-wildcard-import
