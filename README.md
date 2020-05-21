@@ -39,11 +39,10 @@ seteo de las variables de entorno del docker-compose.yml
 ```pip install -e .```   
 
 5. Hacemos export de las variables:
-```export FLASK_APP=auth_server```   
-```export FLASK_ENV=development```   
+```export DATABASE_URL="postgres://mnigwkzorbukjg:f8d628d71867b3206dfcfa0bfd889844a5bacaf871dcafc5c72a4bd43ff16786@ec2-3-91-139-25.compute-1.amazonaws.com:5432/ddelbso61aigs8"```   
 
 6. Corremos el server localmente:  
-```flask run```
+```gunicorn --log-level=debug 'auth_server:create_app()'```
 
 ## Direcciones en Heroku
 - https://chotuve-auth-server-production.herokuapp.com/
