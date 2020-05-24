@@ -16,9 +16,13 @@ install:
   - pip install -r requirements.txt
 
 script:
-  - python -m pytest
   - PYTHONPATH=$(pwd) pylint auth_server
+  # TODO pasar el linter por todas las pruebas con pylint tests/*.py
   - PYTHONPATH=$(pwd) pylint tests/test_auth_server.py
+  - python -m pytest --cov=./auth_server
+  # TODO subir el threshold a medida que madure el proyecto
+  - coverage report --fail-under=31
+  - codecov
   - docker-compose build
 
 before_deploy:
