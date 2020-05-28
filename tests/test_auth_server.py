@@ -24,4 +24,5 @@ def test_fake(client):
 	response = client.get('/fake/', follow_redirects=True)
 	assert not response.status_code == 200
 	assert response.status_code == 404
+
 	

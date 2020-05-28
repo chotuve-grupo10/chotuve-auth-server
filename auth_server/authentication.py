@@ -28,7 +28,7 @@ def validar_usuario(user, password):
 
 ### Register methods ###
 
-@authentication_bp.route('/api/register/', methods=['POST'])
+@authentication_bp.route('/api/register/', methods=['POST'], strict_slashes=False)
 @swag_from('docs/register.yml')
 def _register_user():
 	data = request.json
