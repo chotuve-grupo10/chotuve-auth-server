@@ -1,6 +1,19 @@
 Recibe una solicitud de registro utilizando Facebook
 ---
-# parameters:
+components:
+  securitySchemes:
+    bearerAuth:           
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    
+security:
+  - bearerAuth: []
+parameters:
+  - in: header
+    name: authorization
+    description: bearer token
+    type: string
+    required: true
 responses:
   200:
     description: Register solicitation using Facebook Account
