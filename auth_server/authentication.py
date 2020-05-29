@@ -8,10 +8,11 @@ from flask import Blueprint, current_app, request
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
-from auth_server.db_functions import *
-from auth_server.token_functions import *
 import google.auth.transport.requests
 import google.oauth2.id_token
+from auth_server.db_functions import *
+from auth_server.token_functions import *
+
 
 
 
@@ -70,6 +71,7 @@ def _register_user_using_facebook():
 	except ValueError as exc:
 		result = {'Register': 'Error'}
 		status_code = 401
+		logger.error(exc)
 		return result, status_code
 
 @authentication_bp.route('/api/register_with_google/', methods=['POST'])
@@ -92,6 +94,7 @@ def _register_user_using_google():
 	except ValueError as exc:
 		result = {'Register': 'Error'}
 		status_code = 401
+		logger.error(exc)
 		return result, status_code
 
 ### Login methods ###
@@ -139,7 +142,7 @@ def _login_user_using_facebook():
 		id_token = get_token_id_from_request()
 		decoded_token = auth.verify_id_token(id_token)
 		if not decoded_token:
-			app.logger.debug('Response from auth server login is 401')
+			logger.debug('Response from auth server login is 401')
 			result = {'Login': 'invalid firebase token'}
 			status_code = 401
 		else:
@@ -147,22 +150,23 @@ def _login_user_using_facebook():
 			token = generate_auth_token(decoded_token)
 			logger.debug('This is the token {0}'.format(token))
 			result = {'Token': token}
-			app.logger.debug('Response from auth server login is 200. Login with google userid = {0}'.format(userid))
+			logger.debug('Response from auth server login is 200. Login with google userid = {0}'.format(uid))
 			status_code = 200
-		return result,status_code
+		return result, status_code
 	except ValueError as exc:
 		result = {'Login': 'Error'}
 		status_code = 401
+		logger.error(exc)
 		return result, status_code
-	
-    	
+
+
 
 
 def get_token_id_from_request():
 	id_token = request.headers.get('authorization', None)
 	if not id_token:
 		return {}
-	id_token= id_token.split(' ').pop() 
+	id_token = id_token.split(' ').pop()
 	return id_token
 
 @authentication_bp.route('/api/login_with_google/', methods=['GET'])
@@ -188,6 +192,7 @@ def _login_user_using_google():
 	except ValueError as exc:
 		result = {'Login': 'Error'}
 		status_code = 401
+		logger.error(exc)
 		return result, status_code
 
 
