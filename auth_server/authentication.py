@@ -28,11 +28,14 @@ def validar_usuario(user, password):
 
 ### Register methods ###
 
-@authentication_bp.route('/api/register/', methods=['POST'], strict_slashes=False)
+@authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
 	data = request.json
+
+	#with current_app.app_context():
 	result, status_code = insert_into_users_db(current_app, data)
+
 	return result, status_code
 
 @authentication_bp.route('/api/register_with_facebook/', methods=['POST'])

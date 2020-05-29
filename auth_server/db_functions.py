@@ -46,10 +46,10 @@ def table_exists(client, table_name):
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False
 
-def insert_into_users_db(current_context, user_information):
-	with current_context.app_context():
-		client = current_context.client
+def insert_into_users_db(current_app, user_information):
 
+	with current_app.app_context():
+		client = current_app.client
 		sal = random_string(6)
 		pimienta = random_string(1)
 		cursor = client.cursor()
