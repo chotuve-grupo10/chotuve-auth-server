@@ -46,42 +46,42 @@ def table_exists(client, table_name):
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False
 
-def insert_into_users_db(current_app, user_information):
+def insert_into_users_db(client, user_information):
 
-	with current_app.app_context():
-		client = current_app.client
-		sal = random_string(6)
-		pimienta = random_string(1)
-		cursor = client.cursor()
-		try:
-			cursor.execute(
-				"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt)
-					VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}');"""
-						.format(email=user_information['email'],
-						first_name=user_information['first name'],
-						last_name=user_information['last name'],
-						phone_number=user_information['phone number'],
-						profile_picture=user_information['profile picture'],
-						hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
-						salt=sal))
+	# with current_app.app_context():
+	client = current_app.client
+	sal = random_string(6)
+	pimienta = random_string(1)
+	cursor = client.cursor()
+	try:
+		cursor.execute(
+			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt)
+				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}');"""
+					.format(email=user_information['email'],
+					first_name=user_information['first name'],
+					last_name=user_information['last name'],
+					phone_number=user_information['phone number'],
+					profile_picture=user_information['profile picture'],
+					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
+					salt=sal))
 
-			client.commit()
-			logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
-			result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
-			status_code = 201		# Created
-		except psql_errors.UniqueViolation:
-			client.rollback()
-			logger.error('This user already exists!')
-			result = {'Registration': 'This user already exists!'}
-			status_code = 409		# Conflict
-		except Exception as e:
-			client.rollback()
-			logger.error('Error {e}. Could not insert new user'.format(e=e))
-			result = {'Registration': 'Error {e}. Could not insert new user'.format(e=e)}
-			status_code = 500
+		client.commit()
+		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
+		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+		status_code = 201		# Created
+	except psql_errors.UniqueViolation:
+		client.rollback()
+		logger.error('This user already exists!')
+		result = {'Registration': 'This user already exists!'}
+		status_code = 409		# Conflict
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not insert new user'.format(e=e))
+		result = {'Registration': 'Error {e}. Could not insert new user'.format(e=e)}
+		status_code = 500
 
-		cursor.close()
-		return result, status_code
+	cursor.close()
+	return result, status_code
 
 def get_user(client, mail):
 

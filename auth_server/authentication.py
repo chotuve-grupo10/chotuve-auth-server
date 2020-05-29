@@ -33,8 +33,8 @@ def validar_usuario(user, password):
 def _register_user():
 	data = request.json
 
-	#with current_app.app_context():
-	result, status_code = insert_into_users_db(current_app, data)
+	with current_app.app_context():
+		result, status_code = insert_into_users_db(current_app.client, data)
 
 	return result, status_code
 
