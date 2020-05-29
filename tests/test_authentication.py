@@ -1,6 +1,6 @@
 from unittest.mock import patch
-from auth_server.db_functions import insert_into_users_db
 import simplejson as json
+# from auth_server.db_functions import insert_into_users_db
 
 def test_register_user_succesfully(client):
 	with patch('auth_server.authentication.insert_into_users_db') as mock:

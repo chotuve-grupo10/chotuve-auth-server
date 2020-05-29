@@ -1,27 +1,29 @@
-import os
-import tempfile
+# import os
+# import tempfile
 
 import pytest
 from auth_server import create_app
+# pylint: disable=W0621	(redefined-outer-name)
 
 @pytest.fixture
 def app():
-    db_path = tempfile.mkstemp()
+	# db_path = tempfile.mkstemp()
 
-    app = create_app({
-        'TESTING': True
-    })
+	app = create_app({
+		'TESTING': True
+	})
 
-    with app.app_context():
-    	pass
+	with app.app_context():
+		pass
 
-    return app
+	return app
+
 
 @pytest.fixture
 def client(app):
-    return app.test_client()
+	return app.test_client()
 
 
 @pytest.fixture
 def runner(app):
-    return app.test_cli_runner()
+	return app.test_cli_runner()
