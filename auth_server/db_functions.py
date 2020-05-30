@@ -88,7 +88,7 @@ def insert_firebase_user_into_users_db(client, claims):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,full name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
 				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
 					.format(email=claims.get('email'),
 					full_name=claims.get('name'),
