@@ -17,4 +17,5 @@ disable=
     wildcard-import,
     unused-wildcard-import,
     unused-variable,
-    protected-access
+    protected-access,
+    unused-import
