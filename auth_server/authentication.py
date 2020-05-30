@@ -43,7 +43,7 @@ def _register_user():
 @swag_from('docs/register_with_firebase.yml')
 def _register_user_using_firebase():
 	try:
-		id_token = get_token_id_from_request()
+		id_token = request.headers.get('authorization', None)
 		# En claims se almacena mas informacion de usuario como mail, y datos personales
 		claims = firebase_admin.auth.verify_id_token(id_token)
 		#Si firebase no reconoce el token
@@ -142,7 +142,7 @@ def _login_user():
 @swag_from('docs/login_with_facebook.yml')
 def _login_user_using_facebook():
 	try:
-		id_token = get_token_id_from_request()
+		id_token = request.headers.get('authorization', None)
 		decoded_token = auth.verify_id_token(id_token)
 		if not decoded_token:
 			logger.debug('Response from auth server login is 401')
@@ -162,16 +162,6 @@ def _login_user_using_facebook():
 		status_code = 401
 		logger.error(exc)
 		return result, status_code
-
-
-
-
-def get_token_id_from_request():
-	id_token = request.headers.get('authorization', None)
-	if not id_token:
-		return {}
-	id_token = id_token.split(' ').pop()
-	return id_token
 
 ## Misma historia que mas arriba.
 ## El login de firebase seria general, no necesitamos determinar la red social.
