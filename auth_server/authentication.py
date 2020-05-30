@@ -138,29 +138,39 @@ def _login_user():
 	# current_app.logger.debug('Login was successful since it does anything at all')
 	# return {'Login': 'was successful'}
 
-@authentication_bp.route('/api/login_with_facebook/', methods=['GET'])
-@swag_from('docs/login_with_facebook.yml')
-def _login_user_using_facebook():
+@authentication_bp.route('/api/login_with_firebase/', methods=['POST'])
+@swag_from('docs/login_with_firebase.yml')
+def _login_user_using_firebase():
 	try:
 		id_token = request.headers.get('authorization', None)
-		decoded_token = auth.verify_id_token(id_token)
-		if not decoded_token:
+		claims = firebase_admin.auth.verify_id_token(id_token)
+		if not claims:
 			logger.debug('Response from auth server login is 401')
 			result = {'Login': 'invalid firebase token'}
 			status_code = 401
 		else:
-			#TODO:chequear que el usuario existe en la base. Si no existe, deberia haberse registrado.
-			uid = decoded_token['uid']
-			token = generate_auth_token(decoded_token)
-			logger.debug('This is the token {0}'.format(token))
-			result = {'Token': token}
-			logger.debug('Response from auth server login is 200. Login with google userid = {0}'.format(uid))
-			status_code = 200
+			with current_app.app_context():
+				result, status_code, user = get_user(current_app.client, claims.get('email'))
+				if status_code == 200:
+					if validate_firebase_user(user):
+						logger.debug('Usuario logueado con exito')
+						token = generate_auth_token(data) ## cambiar a que reciba el mail
+						logger.debug('This is the token {0}'.format(token))
+						result = {'Token': token}
+					else:
+						logger.debug('User not registered with Firebase')
+						result = {'Login': 'user not registered with Firebase'}
+						status_code = 401
 		return result, status_code
 	except ValueError as exc:
 		result = {'Login': 'Error'}
 		status_code = 401
 		logger.error(exc)
+		return result, status_code
+	except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
+		result = {'Register': str(invalid_token_error)}
+		status_code = 401
+		logger.error(invalid_token_error)
 		return result, status_code
 
 ## Misma historia que mas arriba.

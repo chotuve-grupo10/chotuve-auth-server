@@ -8,3 +8,8 @@ def validar_usuario(user, password):
 		if hashlib.sha512((password+salt+pimienta).encode('utf-8')).hexdigest() == hashed:
 			return True
 	return False
+
+
+def validate_firebase_user(user):
+	firebase_user = user[6]
+	return firebase_user == '1'
