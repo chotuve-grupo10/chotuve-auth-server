@@ -112,7 +112,7 @@ def _login_user():
 		if status_code == 200:
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
-				token = generate_auth_token(data)
+				token = generate_auth_token(data['email'])
 				logger.debug('This is the token {0}'.format(token))
 				result = {'Token': token}
 			else:
@@ -154,7 +154,7 @@ def _login_user_using_firebase():
 				if status_code == 200:
 					if validate_firebase_user(user):
 						logger.debug('Usuario logueado con exito')
-						token = generate_auth_token(data) ## cambiar a que reciba el mail
+						token = generate_auth_token(claims.get('email'))
 						logger.debug('This is the token {0}'.format(token))
 						result = {'Token': token}
 					else:
