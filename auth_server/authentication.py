@@ -64,9 +64,14 @@ def _register_user_using_facebook():
 			result = {'Register': 'invalid firebase token'}
 			status_code = 401
 		else:
-			with current_app.app_context():
-				result, status_code = insert_into_users_db(current_app.client, claims)
-			logger.debug('User was inserted')
+			#TODO: insert into users db no esta preparada para recibir claims.
+			#TODO: hacer funcion previa que prepara la data.
+			logger.debug('Valid token')
+			result = {'Register': 'valid firebase token'}
+			status_code = 200
+			# with current_app.app_context():
+			# 	result, status_code = insert_into_users_db(current_app.client, claims)
+			# logger.debug('User was inserted')
 		return result, status_code
 	except ValueError as exc:
 		result = {'Register': 'Error'}
@@ -87,9 +92,14 @@ def _register_user_using_google():
 			result = {'Register': 'invalid firebase token'}
 			status_code = 401
 		else:
-			with current_app.app_context():
-				result, status_code = insert_into_users_db(current_app.client, claims)
-			logger.debug('User was inserted')
+			#TODO: insert into users db no esta preparada para recibir claims.
+			#TODO: hacer funcion previa que prepara la data.
+			logger.debug('Valid token')
+			result = {'Register': 'valid firebase token'}
+			status_code = 200
+			# with current_app.app_context():
+			# 	result, status_code = insert_into_users_db(current_app.client, claims)
+			# logger.debug('User was inserted')
 		return result, status_code
 	except ValueError as exc:
 		result = {'Register': 'Error'}
@@ -146,6 +156,7 @@ def _login_user_using_facebook():
 			result = {'Login': 'invalid firebase token'}
 			status_code = 401
 		else:
+			#TODO:chequear que el usuario existe en la base. Si no existe, deberia haberse registrado.
 			uid = decoded_token['uid']
 			token = generate_auth_token(decoded_token)
 			logger.debug('This is the token {0}'.format(token))
