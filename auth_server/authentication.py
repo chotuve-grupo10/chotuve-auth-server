@@ -1,6 +1,3 @@
-# import os
-import logging
-import hashlib
 import firebase_admin
 from firebase_admin import credentials
 from flask import Blueprint, current_app, request
@@ -9,6 +6,7 @@ from flasgger import swag_from
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
 from auth_server.db_functions import *
 from auth_server.token_functions import *
+from auth_server.validation_functions import *
 
 authentication_bp = Blueprint('authentication', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -17,26 +15,16 @@ logger = logging.getLogger('gunicorn.error')
 cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
 firebase_app = firebase_admin.initialize_app(cred)
 
-def validar_usuario(user, password):
-	hashed = user[5]
-	salt = user[6]
-	for i in range(256):
-		pimienta = chr(i)
-		if hashlib.sha512((password+salt+pimienta).encode('utf-8')).hexdigest() == hashed:
-			return True
-	return False
-
 ### Register methods ###
 
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-
 	data = request.json
 
 	with current_app.app_context():
 		result, status_code = insert_into_users_db(current_app.client, data)
-	logger.debug('User was inserted')
+
 	return result, status_code
 
 @authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
