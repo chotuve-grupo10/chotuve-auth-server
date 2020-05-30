@@ -1,6 +1,3 @@
-# import os
-import logging
-import hashlib
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
@@ -12,6 +9,7 @@ import google.auth.transport.requests
 import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
+from auth_server.validation_functions import *
 
 
 
@@ -28,21 +26,11 @@ logger = logging.getLogger('gunicorn.error')
 cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
 firebase_app = firebase_admin.initialize_app(cred)
 
-def validar_usuario(user, password):
-	hashed = user[4]
-	salt = user[5]
-	for i in range(256):
-		pimienta = chr(i)
-		if hashlib.sha512((password+salt+pimienta).encode('utf-8')).hexdigest() == hashed:
-			return True
-	return False
-
 ### Register methods ###
 
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-
 	data = request.json
 
 	with current_app.app_context():

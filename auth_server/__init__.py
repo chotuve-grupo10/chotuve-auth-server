@@ -90,31 +90,31 @@ def create_app(test_config=None):
 		return "<h1>Welcome to auth server !</h1>"
 
 	### Métodos no implementados aún ###
-	@app.route('/api/profile/', methods=['GET'])
-	@swag_from('docs/profile.yml')
-	def _profile():
-		jwt_token = request.headers.get('authorization', None)
-		result, status_code = validate_token(jwt_token)
-		return result, status_code
-
-	@app.route('/api/update_profile/user/<int:id>', methods=['PATCH'])
-	@swag_from('docs/update_profile.yml')
-	def _update_profile():
-		return {}
-
-	@app.route('/api/register_app_server/', methods=['GET'])
-	@swag_from('docs/register_app_server.yml')
-	def _register_app_server():
-		return {}
-
-	@app.route('/api/stats/', methods=['GET'])
-	@swag_from('docs/stats.yml')
-	def _stats():
-		return {}
-
-	@app.route('/api/status/', methods=['GET'])
-	@swag_from('docs/status.yml')
-	def _status():
-		return {}
+	# @app.route('/api/profile/', methods=['GET'])
+	# @swag_from('docs/profile.yml')
+	# def _profile():
+	# 	jwt_token = request.headers.get('authorization', None)
+	# 	result, status_code = validate_token(jwt_token)
+	# 	return result, status_code
+	#
+	# @app.route('/api/update_profile/user/<int:id>', methods=['PATCH'])
+	# @swag_from('docs/update_profile.yml')
+	# def _update_profile():
+	# 	return {}
+	#
+	# @app.route('/api/register_app_server/', methods=['GET'])
+	# @swag_from('docs/register_app_server.yml')
+	# def _register_app_server():
+	# 	return {}
+	#
+	# @app.route('/api/stats/', methods=['GET'])
+	# @swag_from('docs/stats.yml')
+	# def _stats():
+	# 	return {}
+	#
+	# @app.route('/api/status/', methods=['GET'])
+	# @swag_from('docs/status.yml')
+	# def _status():
+	# 	return {}
 
 	return app

@@ -49,6 +49,8 @@ def table_exists(client, table_name):
 
 def insert_local_user_into_users_db(client, user_information):
 
+	# with current_app.app_context():
+	client = current_app.client
 	sal = random_string(6)
 	pimienta = random_string(1)
 	cursor = client.cursor()
