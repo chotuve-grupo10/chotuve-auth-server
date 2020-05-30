@@ -1,12 +1,23 @@
 import firebase_admin
 from firebase_admin import credentials
+from firebase_admin import auth
 from flask import Blueprint, current_app, request
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
+import google.auth.transport.requests
+import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 from auth_server.validation_functions import *
+
+
+
+
+# Use the App Engine Requests adapter. This makes sure that Requests uses
+# URLFetch.
+HTTP_REQUEST = google.auth.transport.requests.Request()
+
 
 authentication_bp = Blueprint('authentication', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -23,19 +34,70 @@ def _register_user():
 	data = request.json
 
 	with current_app.app_context():
-		result, status_code = insert_into_users_db(current_app.client, data)
-
+		result, status_code = insert_local_user_into_users_db(current_app.client, data)
+	logger.debug('User was inserted')
 	return result, status_code
 
-@authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
-@swag_from('docs/register_with_facebook.yml')
-def _register_user_using_facebook():
-	return {}
+
+@authentication_bp.route('/api/register_with_firebase/', methods=['POST'])
+@swag_from('docs/register_with_firebase.yml')
+def _register_user_using_firebase():
+	try:
+		id_token = get_token_id_from_request()
+		# En claims se almacena mas informacion de usuario como mail, y datos personales
+		claims = firebase_admin.auth.verify_id_token(id_token)
+		#Si firebase no reconoce el token
+		if not claims:
+			logger.debug('Token incorrecto')
+			result = {'Register': 'invalid firebase token'}
+			status_code = 401
+		else:
+			#TODO: insert into users db no esta preparada para recibir claims.
+			#TODO: hacer funcion previa que prepara la data.
+			logger.debug('Valid token')
+			result = {'Register': 'valid firebase token'}
+			status_code = 200
+			with current_app.app_context():
+				result, status_code = insert_firebase_user_into_users_db(current_app.client, claims)
+		return result, status_code
+	except ValueError as exc:
+		result = {'Register': 'Error'}
+		status_code = 401
+		logger.error(exc)
+		return result, status_code
+	except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
+		result = {'Register': 'invalid token'}
+		status_code = 401
+		logger.error(invalid_token_error)
+		return result, status_code
 
 @authentication_bp.route('/api/register_with_google/', methods=['POST'])
 @swag_from('docs/register_with_google.yml')
 def _register_user_using_google():
-	return {}
+	try:
+		id_token = get_token_id_from_request()
+		# En claims se almacena mas informacion de usuario como mail, y datos personales
+		claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
+		#Si firebase no reconoce el token
+		if not claims:
+			logger.debug('Token incorrecto')
+			result = {'Register': 'invalid firebase token'}
+			status_code = 401
+		else:
+			#TODO: insert into users db no esta preparada para recibir claims.
+			#TODO: hacer funcion previa que prepara la data.
+			logger.debug('Valid token')
+			result = {'Register': 'valid firebase token'}
+			status_code = 200
+			# with current_app.app_context():
+			# 	result, status_code = insert_into_users_db(current_app.client, claims)
+			# logger.debug('User was inserted')
+		return result, status_code
+	except ValueError as exc:
+		result = {'Register': 'Error'}
+		status_code = 401
+		logger.error(exc)
+		return result, status_code
 
 ### Login methods ###
 
@@ -78,12 +140,64 @@ def _login_user():
 @authentication_bp.route('/api/login_with_facebook/', methods=['GET'])
 @swag_from('docs/login_with_facebook.yml')
 def _login_user_using_facebook():
-	return {}
+	try:
+		id_token = get_token_id_from_request()
+		decoded_token = auth.verify_id_token(id_token)
+		if not decoded_token:
+			logger.debug('Response from auth server login is 401')
+			result = {'Login': 'invalid firebase token'}
+			status_code = 401
+		else:
+			#TODO:chequear que el usuario existe en la base. Si no existe, deberia haberse registrado.
+			uid = decoded_token['uid']
+			token = generate_auth_token(decoded_token)
+			logger.debug('This is the token {0}'.format(token))
+			result = {'Token': token}
+			logger.debug('Response from auth server login is 200. Login with google userid = {0}'.format(uid))
+			status_code = 200
+		return result, status_code
+	except ValueError as exc:
+		result = {'Login': 'Error'}
+		status_code = 401
+		logger.error(exc)
+		return result, status_code
+
+
+
+
+def get_token_id_from_request():
+	id_token = request.headers.get('authorization', None)
+	if not id_token:
+		return {}
+	id_token = id_token.split(' ').pop()
+	return id_token
 
 @authentication_bp.route('/api/login_with_google/', methods=['GET'])
 @swag_from('docs/login_with_google.yml')
 def _login_user_using_google():
-	return {}
+	try:
+		id_token = get_token_id_from_request()
+		# En claims se almacena mas informacion de usuario como mail, y datos personales
+		claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
+		#Si google no reconoce el token
+		if not claims:
+			logger.debug('Token incorrecto')
+			result = {'Login': 'invalid firebase token'}
+			status_code = 401
+		else:
+			result, status_code, user = get_user(current_app.client, claims.get('email'))
+			logger.debug('Usuario logueado con exito via Google')
+			token = generate_auth_token(claims)
+			logger.debug('This is the token {0}'.format(token))
+			result = {'Token': token}
+			status_code = 200
+		return result, status_code
+	except ValueError as exc:
+		result = {'Login': 'Error'}
+		status_code = 401
+		logger.error(exc)
+		return result, status_code
+
 
 ### Validating token methods ####
 

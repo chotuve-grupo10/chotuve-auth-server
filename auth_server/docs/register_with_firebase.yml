@@ -1,4 +1,4 @@
-Recibe una solicitud de login utilizando Facebook
+Recibe una solicitud de registro utilizando Firebase
 ---
 components:
   securitySchemes:
@@ -11,9 +11,9 @@ security:
 parameters:
   - in: header
     name: authorization
-    description: bearer token
+    description: id_token
     type: string
     required: true
 responses:
   200:
-    description: Login solicitation using Facebook Account
+    description: Register solicitation using Firebase

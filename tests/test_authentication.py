@@ -3,12 +3,12 @@ import simplejson as json
 # from auth_server.db_functions import insert_into_users_db
 
 def test_register_user_succesfully(client):
-	with patch('auth_server.authentication.insert_into_users_db') as mock:
+	with patch('auth_server.authentication.insert_local_user_into_users_db') as mock:
 		user_information = {'email': 'this_email_should_not_be_saved@test.com',
 				'password': 'fake password',
-				'first name': 'first name', 'last name': 'last name',
+				'full name': 'full name',
 				'phone number': 'phone number', 'profile picture': 'profile picture',
-				'hash': 'hash', 'salt': 'salt'}
+				'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
 
 		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
 		status_code = 201
@@ -24,12 +24,12 @@ def test_register_user_succesfully(client):
 		assert json.loads(response.data) == value_expected
 
 def test_register_user_already_registered(client):
-	with patch('auth_server.authentication.insert_into_users_db') as mock:
+	with patch('auth_server.authentication.insert_local_user_into_users_db') as mock:
 		user_information = {'email': 'diegote@gmail.com',
 				'password': 'fake password',
-				'first name': 'first name', 'last name': 'last name',
+				'full name': 'full name',
 				'phone number': 'phone number', 'profile picture': 'profile picture',
-				'hash': 'hash', 'salt': 'salt'}
+				'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
 
 		result = {'Registration': 'This user already exists!'}
 		status_code = 409
