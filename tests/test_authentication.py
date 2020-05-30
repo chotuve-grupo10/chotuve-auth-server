@@ -43,3 +43,46 @@ def test_register_user_already_registered(client):
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
+
+def test_login_user_succesful(client):
+	with patch('auth_server.authentication.get_user') as mock_get_user:
+		result = {}
+		status_code = 200
+		user = ('diegote@gmail.com')
+		mock_get_user.return_value = result, status_code, user
+
+		with patch('auth_server.authentication.validar_usuario') as mock_validar:
+
+			with patch('auth_server.authentication.generate_auth_token') as mock_token_generation:
+				mock_token_generation.return_value = 'THISISAFAKETOKEN'
+				user_information = {'email': 'diegote@gmail.com',
+									'password': 'fake_falopa'}
+
+
+				response = client.post('/api/login/', json=user_information,
+									   follow_redirects=False)
+				value_expected = {'Token':
+								  'THISISAFAKETOKEN'}
+
+			mock_validar.return_value = True
+			assert mock_get_user.called
+			assert mock_validar.called
+			assert mock_token_generation.called
+			assert json.loads(response.data) == value_expected
+
+def test_login_user_not_found(client):
+	with patch('auth_server.authentication.get_user') as mock_get_user:
+		result = {'Login': 'user NOT found'}
+		status_code = 404
+		user = None
+		mock_get_user.return_value = result, status_code, user
+
+		user_information = {'email': 'this_user_does_not_Exist@gmail.com',
+							'password': 'some_password'}
+
+		response = client.post('/api/login/', json=user_information,
+									   follow_redirects=False)
+		value_expected = result
+
+		assert mock_get_user.called
+		assert json.loads(response.data) == value_expected
