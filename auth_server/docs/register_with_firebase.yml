@@ -1,19 +1,19 @@
-Recibe una solicitud de registro utilizando Facebook
+Recibe una solicitud de registro utilizando Firebase
 ---
 components:
   securitySchemes:
-    bearerAuth:           
+    bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT    
+      bearerFormat: JWT
 security:
   - bearerAuth: []
 parameters:
   - in: header
     name: authorization
-    description: bearer token
+    description: id_token
     type: string
     required: true
 responses:
   200:
-    description: Register solicitation using Facebook Account
+    description: Register solicitation using Firebase

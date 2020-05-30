@@ -51,9 +51,9 @@ def _register_user():
 	return result, status_code
 
 
-@authentication_bp.route('/api/register_with_facebook/', methods=['POST'])
-@swag_from('docs/register_with_facebook.yml')
-def _register_user_using_facebook():
+@authentication_bp.route('/api/register_with_firebase/', methods=['POST'])
+@swag_from('docs/register_with_firebase.yml')
+def _register_user_using_firebase():
 	try:
 		id_token = get_token_id_from_request()
 		# En claims se almacena mas informacion de usuario como mail, y datos personales
@@ -77,6 +77,11 @@ def _register_user_using_facebook():
 		result = {'Register': 'Error'}
 		status_code = 401
 		logger.error(exc)
+		return result, status_code
+	except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
+		result = {'Register': 'invalid token'}
+		status_code = 401
+		logger.error(invalid_token_error)
 		return result, status_code
 
 @authentication_bp.route('/api/register_with_google/', methods=['POST'])
