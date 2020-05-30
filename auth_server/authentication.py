@@ -69,9 +69,8 @@ def _register_user_using_firebase():
 			logger.debug('Valid token')
 			result = {'Register': 'valid firebase token'}
 			status_code = 200
-			# with current_app.app_context():
-			# 	result, status_code = insert_into_users_db(current_app.client, claims)
-			# logger.debug('User was inserted')
+			with current_app.app_context():
+				result, status_code = insert_firebase_user_into_users_db(current_app.client, claims)
 		return result, status_code
 	except ValueError as exc:
 		result = {'Register': 'Error'}
