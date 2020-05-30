@@ -6,8 +6,7 @@ from auth_server.random_string import *
 
 create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
-						first_name VARCHAR(255) NOT NULL,
-						last_name VARCHAR(255) NOT NULL,
+						full_name VARCHAR(255) NOT NULL,
 						phone_number VARCHAR(255),
 						profile_picture VARCHAR(255),
 						hash VARCHAR(255) NOT NULL,
@@ -55,11 +54,10 @@ def insert_local_user_into_users_db(client, user_information):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
-				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
 					.format(email=user_information['email'],
-					first_name=user_information['first name'],
-					last_name=user_information['last name'],
+					full_name=user_information['full name'],
 					phone_number=user_information['phone number'],
 					profile_picture=user_information['profile picture'],
 					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
