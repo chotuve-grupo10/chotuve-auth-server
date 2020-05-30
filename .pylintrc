@@ -16,4 +16,5 @@ disable=
     no-member,
     wildcard-import,
     unused-wildcard-import,
-    unused-variable
+    unused-variable,
+    protected-access
