@@ -1,6 +1,5 @@
 import firebase_admin
 from firebase_admin import credentials
-from firebase_admin import auth
 from flask import Blueprint, current_app, request
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
