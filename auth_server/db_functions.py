@@ -8,10 +8,12 @@ create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
 						first_name VARCHAR(255) NOT NULL,
 						last_name VARCHAR(255) NOT NULL,
-						phone_number VARCHAR(255) NOT NULL,
+						phone_number VARCHAR(255),
 						profile_picture VARCHAR(255),
 						hash VARCHAR(255) NOT NULL,
-						salt VARCHAR(255) NOT NULL);"""
+						salt VARCHAR(255) NOT NULL,
+						firebase_user VARCHAR(1) NOT NULL,
+						admin_user VARCHAR(1) NOT NULL);"""
 
 logger = logging.getLogger('gunicorn.error')
 
@@ -46,22 +48,24 @@ def table_exists(client, table_name):
 		logger.debug('Table {0} does not exists'.format(table_name))
 		return False
 
-def insert_into_users_db(client, user_information):
+def insert_local_user_into_users_db(client, user_information):
 
 	sal = random_string(6)
 	pimienta = random_string(1)
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt)
-				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}');"""
+			"""INSERT INTO Users(email,first_name,last_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+				VALUES('{email}','{first_name}','{last_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
 					.format(email=user_information['email'],
 					first_name=user_information['first name'],
 					last_name=user_information['last name'],
 					phone_number=user_information['phone number'],
 					profile_picture=user_information['profile picture'],
 					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
-					salt=sal))
+					salt=sal,
+					firebase_user='0',
+					admin_user='0'))
 
 		client.commit()
 		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))

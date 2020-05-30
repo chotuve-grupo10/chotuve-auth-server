@@ -46,7 +46,7 @@ def _register_user():
 	data = request.json
 
 	with current_app.app_context():
-		result, status_code = insert_into_users_db(current_app.client, data)
+		result, status_code = insert_local_user_into_users_db(current_app.client, data)
 	logger.debug('User was inserted')
 	return result, status_code
 
