@@ -15,4 +15,7 @@ disable=
     logging-format-interpolation,
     no-member,
     wildcard-import,
-    unused-wildcard-import
+    unused-wildcard-import,
+    unused-variable,
+    protected-access,
+    unused-import
