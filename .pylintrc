@@ -18,4 +18,5 @@ disable=
     unused-wildcard-import,
     unused-variable,
     protected-access,
-    unused-import
+    unused-import,
+    using-constant-test

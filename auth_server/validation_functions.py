@@ -19,7 +19,7 @@ def validate_firebase_user(user):
 
 def validate_admin_user(user):
 	# Si se registro con firebase no puede ser admin.
-	if (validate_firebase_user):
+	if validate_firebase_user:
 		return False
 	admin_user = user[ADMIN_FLAG_POSITION]
 	return admin_user == '1'
