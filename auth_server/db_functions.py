@@ -85,6 +85,44 @@ def insert_local_user_into_users_db(client, user_information):
 	cursor.close()
 	return result, status_code
 
+def insert_admin_user_into_users_db(client, user_information):
+
+	# with current_app.app_context():
+	client = current_app.client
+	sal = random_string(6)
+	pimienta = random_string(1)
+	cursor = client.cursor()
+	try:
+		cursor.execute(
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+					.format(email=user_information['email'],
+					full_name=user_information['full name'],
+					phone_number=user_information['phone number'],
+					profile_picture=user_information['profile picture'],
+					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
+					salt=sal,
+					firebase_user='0',
+					admin_user='1'))
+
+		client.commit()
+		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
+		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+		status_code = 201		# Created
+	except psql_errors.UniqueViolation:
+		client.rollback()
+		logger.error('This user already exists!')
+		result = {'Registration': 'This user already exists!'}
+		status_code = 409		# Conflict
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not insert new user'.format(e=e))
+		result = {'Registration': 'Error {e}. Could not insert new user'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
+
 def insert_firebase_user_into_users_db(client, claims):
 
 	cursor = client.cursor()

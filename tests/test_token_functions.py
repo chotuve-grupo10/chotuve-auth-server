@@ -16,3 +16,19 @@ def test_invalid_token():
 
     assert status_code == 401
     assert result == {'Message': 'invalid token'}
+
+def test_returns_user_with_token_successfully():
+    user_email = 'test@test.com'
+
+    generated_token = auth_server.token_functions.generate_auth_token(user_email)
+    user = auth_server.token_functions.get_user_with_token(generated_token)
+
+    assert user == user_email
+
+def test_returns_user_with_token_fails_invalid_token():
+    invalid_token = 'invalid_token'
+    value_expected = 'invalid token'
+
+    user = auth_server.token_functions.get_user_with_token(invalid_token)
+
+    assert user == value_expected
