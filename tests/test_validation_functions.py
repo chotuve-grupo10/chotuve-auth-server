@@ -28,4 +28,4 @@ def test_valid_admin_user():
 
     user = ['test@mail.com', 'test', 'phone', 'picture', 'hash', 'salt', '0', '1']
 
-    assert not auth_server.validation_functions.validate_admin_user(user)
+    assert auth_server.validation_functions.validate_admin_user(user)

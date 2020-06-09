@@ -80,6 +80,7 @@ def _register_admin_user():
 		logger.debug('Valid token')
 		user_email = get_user_with_token(id_token)
 		if user_email != 'invalid token':
+			logger.debug('User with token is ' + user_email)
 			with current_app.app_context():
 				result, status_code, user = get_user(current_app.client, user_email)
 
@@ -89,8 +90,10 @@ def _register_admin_user():
 				with current_app.app_context():
 					result, status_code = insert_admin_user_into_users_db(current_app.client, data)
 			else:
+				logger.error('User is not admin user')
 				result, status_code = {'Error':'this user is not admin'}, 401
 		else:
+			logger.error('Cant get user from token')
 			result, status_code = {'Message':'invalid token'}, 401
 
 	return result, status_code

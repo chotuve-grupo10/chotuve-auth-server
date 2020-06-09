@@ -106,8 +106,8 @@ def insert_admin_user_into_users_db(client, user_information):
 					admin_user='1'))
 
 		client.commit()
-		logger.debug('Successfully registered new user with email {0}'.format(user_information['email']))
-		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+		logger.debug('Successfully registered new admin user with email {0}'.format(user_information['email']))
+		result = {'Registration': 'Successfully registered new admin user with email {0}'.format(user_information['email'])}
 		status_code = 201		# Created
 	except psql_errors.UniqueViolation:
 		client.rollback()
