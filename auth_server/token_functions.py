@@ -10,9 +10,9 @@ logger = logging.getLogger('gunicorn.error')
 
 def generate_auth_token(user_email, expiration=1000):
 	payload = {
-        'user_id': user_email,
-        'exp': datetime.utcnow() + timedelta(seconds=expiration)
-    }
+		'user_id': user_email,
+		'exp': datetime.utcnow() + timedelta(seconds=expiration)
+	}
 
 	jwt_token = jwt.encode(payload, JWT_SECRET, JWT_ALGORITHM)
 	return jwt_token
@@ -33,3 +33,16 @@ def validate_token(token):
 			result = {'Message': 'expired token'}
 			status_code = 401
 	return result, status_code
+
+def get_user_with_token(token):
+	if token:
+		try:
+			logger.debug("Token to decode")
+			logger.debug(token)
+			payload = jwt.decode(token, JWT_SECRET, algorithms='HS256')
+			user = payload['user_id']
+		except jwt.DecodeError:
+			user = 'invalid token'
+		except jwt.ExpiredSignatureError:
+			user = 'invalid token'
+	return user

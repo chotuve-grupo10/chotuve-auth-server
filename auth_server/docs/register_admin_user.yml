@@ -1,0 +1,38 @@
+Recibe una solicitud de registro de usuario administrador.
+---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+definitions:
+  User:
+    type: object
+    properties:
+      email:
+        type: string
+      full name:
+        type: string
+      password:
+        type: string
+      phone number:
+        type: string
+      profile picture:
+        type: string
+parameters:
+  - in: header
+    name: authorization
+    description: id_token
+    type: string
+    required: true
+  - in: body
+    name: user
+    description: The user to create.
+    schema:
+      $ref: '#/definitions/User'
+responses:
+  200:
+    description: Register solicitation using Firebase

@@ -69,6 +69,35 @@ def _register_user_using_firebase():
 		logger.error(invalid_token_error)
 		return result, status_code
 
+@authentication_bp.route('/api/register_admin_user/', methods=['POST'])
+@swag_from('docs/register_admin_user.yml')
+def _register_admin_user():
+
+	id_token = request.headers.get('authorization', None)
+	result, status_code = validate_token(id_token)
+
+	if status_code == 200:
+		logger.debug('Valid token')
+		user_email = get_user_with_token(id_token)
+		if user_email != 'invalid token':
+			logger.debug('User with token is ' + user_email)
+			with current_app.app_context():
+				result, status_code, user = get_user(current_app.client, user_email)
+
+			if validate_admin_user(user):
+				logger.debug('Token is from admin user')
+				data = request.json
+				with current_app.app_context():
+					result, status_code = insert_admin_user_into_users_db(current_app.client, data)
+			else:
+				logger.error('User is not admin user')
+				result, status_code = {'Error':'this user is not admin'}, 401
+		else:
+			logger.error('Cant get user from token')
+			result, status_code = {'Message':'invalid token'}, 401
+
+	return result, status_code
+
 ## La realidad es que no importa la red social lo que verificamos es el token de firebase.
 ## Por ahora lo dejo por si se me esta pasando algo, pero eventualmente vamos a borrar este endpoint
 

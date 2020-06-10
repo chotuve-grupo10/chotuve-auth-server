@@ -1,5 +1,7 @@
 import hashlib
 
+ADMIN_FLAG_POSITION = 7
+
 def validar_usuario(user, password):
 	hashed = user[4]
 	salt = user[5]
@@ -13,3 +15,11 @@ def validar_usuario(user, password):
 def validate_firebase_user(user):
 	firebase_user = user[6]
 	return firebase_user == '1'
+
+
+def validate_admin_user(user):
+	# Si se registro con firebase no puede ser admin.
+	if validate_firebase_user(user):
+		return False
+	admin_user = user[ADMIN_FLAG_POSITION]
+	return admin_user == '1'
