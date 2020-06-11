@@ -32,7 +32,11 @@ def validate_token(token):
 		except jwt.ExpiredSignatureError:
 			result = {'Message': 'expired token'}
 			status_code = 401
-	return result, status_code
+		return result, status_code
+	else:
+		logger.error('No token provided')
+		return {'Error':'No token provided'}, 500
+
 
 def get_user_with_token(token):
 	if token:
