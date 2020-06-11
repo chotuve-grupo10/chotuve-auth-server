@@ -87,12 +87,10 @@ def test_login_user_not_found(client):
 		assert mock_get_user.called
 		assert json.loads(response.data) == value_expected
 
-def test_register_admin_user_fails_invalid_token_received(client):
-	with patch('auth_server.authentication.validate_token') as mock_validate_token:
-		result = {'Message': 'invalid token'}
-		status_code = 401
-		user = None
-		mock_validate_token.return_value = result, status_code
+def test_register_admin_user_fails_request_doesnt_come_from_admin_user(client):
+	with patch('auth_server.authentication.is_request_from_admin_user') as mock_is_request_from_admin_user:
+
+		mock_is_request_from_admin_user.return_value = False
 
 		user_information = {'email': 'this_email_should_not_be_saved@test.com',
 				'password': 'fake password',
@@ -103,117 +101,37 @@ def test_register_admin_user_fails_invalid_token_received(client):
 
 		response = client.post('/api/register_admin_user/', json=user_information, headers=hed,
 									   follow_redirects=False)
-		value_expected = result
 
-		assert mock_validate_token.called
+		value_expected = {'Error':'This request doesnt come from an admin user'}
+
+		assert mock_is_request_from_admin_user.called
 		assert json.loads(response.data) == value_expected
 
-def test_register_admin_user_fails_invalid_token_from_user(client):
-	with patch('auth_server.authentication.validate_token') as mock_validate_token:
-		result = {'Message': 'token valido para user test'}
-		status_code = 200
-		mock_validate_token.return_value = result, status_code
+def test_register_admin_user_successfully(client):
+	with patch('auth_server.authentication.is_request_from_admin_user') as mock_is_request_from_admin_user:
 
-		with patch('auth_server.authentication.get_user_with_token') as mock_get_user_with_token:
+		mock_is_request_from_admin_user.return_value = True
 
-			mock_get_user_with_token.return_value = 'invalid token'
+		with patch('auth_server.authentication.insert_admin_user_into_users_db') as mock_insert_admin_user:
 
-			user_information = {'email': 'this_email_should_not_be_saved@test.com',
+			user_information = {'email': 'test@test.com',
 					'password': 'fake password',
 					'full name': 'full name',
 					'phone number': 'phone number', 'profile picture': 'profile picture'}
 
 			hed = {'authorization': 'FAKETOKEN'}
 
+			result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+			status_code = 201
+
+			mock_insert_admin_user.return_value = result, status_code
+
 			response = client.post('/api/register_admin_user/', json=user_information, headers=hed,
 										follow_redirects=False)
 
-			value_expected = {'Message':'invalid token'}
+			value_expected =  result
 
-			assert mock_validate_token.called
-			assert mock_get_user_with_token.called
+			assert mock_is_request_from_admin_user.called
+			assert mock_insert_admin_user.called
 			assert json.loads(response.data) == value_expected
 
-def test_register_admin_user_fails_user_requesting_isnt_admin(client):
-	with patch('auth_server.authentication.validate_token') as mock_validate_token:
-		result = {'Message': 'token valido para user test'}
-		status_code = 200
-		mock_validate_token.return_value = result, status_code
-
-		with patch('auth_server.authentication.get_user_with_token') as mock_get_user_with_token:
-
-			mock_get_user_with_token.return_value = 'test@test.com'
-
-			with patch('auth_server.authentication.get_user') as mock_get_user:
-				result = {}
-				status_code = 200
-				user = ('test@test.com')
-				mock_get_user.return_value = result, status_code, user
-
-				with patch('auth_server.authentication.validate_admin_user') as mock_validate_admin_user:
-
-					mock_validate_admin_user.return_value = False
-
-					user_information = {'email': 'this_email_should_not_be_saved@test.com',
-							'password': 'fake password',
-							'full name': 'full name',
-							'phone number': 'phone number', 'profile picture': 'profile picture'}
-
-					hed = {'authorization': 'FAKETOKEN'}
-
-					response = client.post('/api/register_admin_user/', json=user_information, headers=hed,
-												follow_redirects=False)
-
-					value_expected =  {'Error':'this user is not admin'}
-
-					assert mock_validate_token.called
-					assert mock_get_user_with_token.called
-					assert mock_get_user.called
-					assert mock_validate_admin_user.called
-					assert json.loads(response.data) == value_expected
-
-def test_register_admin_user_successfully(client):
-	with patch('auth_server.authentication.validate_token') as mock_validate_token:
-		result = {'Message': 'token valido para user test'}
-		status_code = 200
-		mock_validate_token.return_value = result, status_code
-
-		with patch('auth_server.authentication.get_user_with_token') as mock_get_user_with_token:
-
-			mock_get_user_with_token.return_value = 'test@test.com'
-
-			with patch('auth_server.authentication.get_user') as mock_get_user:
-				result = {}
-				status_code = 200
-				user = ('test@test.com')
-				mock_get_user.return_value = result, status_code, user
-
-				with patch('auth_server.authentication.validate_admin_user') as mock_validate_admin_user:
-
-					mock_validate_admin_user.return_value = True
-
-					with patch('auth_server.authentication.insert_admin_user_into_users_db') as mock_insert_admin_user:
-
-						user_information = {'email': 'test@test.com',
-								'password': 'fake password',
-								'full name': 'full name',
-								'phone number': 'phone number', 'profile picture': 'profile picture'}
-
-						hed = {'authorization': 'FAKETOKEN'}
-
-						result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
-						status_code = 201
-
-						mock_insert_admin_user.return_value = result, status_code
-
-						response = client.post('/api/register_admin_user/', json=user_information, headers=hed,
-													follow_redirects=False)
-
-						value_expected =  result
-
-						assert mock_validate_token.called
-						assert mock_get_user_with_token.called
-						assert mock_get_user.called
-						assert mock_validate_admin_user.called
-						assert mock_insert_admin_user.called
-						assert json.loads(response.data) == value_expected
