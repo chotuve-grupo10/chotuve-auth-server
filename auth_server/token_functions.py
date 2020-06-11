@@ -41,8 +41,8 @@ def get_user_with_token(token):
 			logger.debug(token)
 			payload = jwt.decode(token, JWT_SECRET, algorithms='HS256')
 			user = payload['user_id']
+			return user
 		except jwt.DecodeError:
-			user = 'invalid token'
+			raise ValueError('Cant decode token')
 		except jwt.ExpiredSignatureError:
-			user = 'invalid token'
-	return user
+			raise ValueError('This token is expired')
