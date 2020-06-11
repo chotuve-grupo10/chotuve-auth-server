@@ -1,6 +1,19 @@
 Este servicio permitirá borrar a un usuario. La accion la debe hacer un admin user.
 ---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
 parameters:
+  - in: header
+    name: authorization
+    description: token
+    type: string
+    required: true
   - in: path
     name: user_email
     description: User's email
@@ -10,6 +23,6 @@ responses:
   200:
     description: user deleted.
   401:
-    description: you dont have the necessary permissions to delete a user.
+    description: you dont have the necessary permissions to delete a user or your token is invalid.
   500:
     description: there is an internal problem with the auth server.
