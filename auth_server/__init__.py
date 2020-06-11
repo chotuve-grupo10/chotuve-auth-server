@@ -8,6 +8,7 @@ from flasgger import Swagger
 from flasgger import swag_from
 import simplejson as json
 from auth_server.authentication import authentication_bp
+from auth_server.users import users_bp
 from auth_server.db_functions import initialize_db
 from auth_server.token_functions import *
 
@@ -58,6 +59,7 @@ def create_app(test_config=None):
 	# Registro de blueprints que encapsulan comportamiento:
 	with app.app_context():
 		app.register_blueprint(authentication_bp)
+		app.register_blueprint(users_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')

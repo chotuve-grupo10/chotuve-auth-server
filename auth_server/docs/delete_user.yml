@@ -1,0 +1,15 @@
+Este servicio permitirá borrar a un usuario. La accion la debe hacer un admin user.
+---
+parameters:
+  - in: path
+    name: user_email
+    description: User's email
+    schema:
+       type: string
+responses:
+  200:
+    description: user deleted.
+  401:
+    description: you dont have the necessary permissions to delete a user.
+  500:
+    description: there is an internal problem with the auth server.
