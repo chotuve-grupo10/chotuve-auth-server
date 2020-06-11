@@ -43,6 +43,11 @@ def get_user_with_token(token):
 			user = payload['user_id']
 			return user
 		except jwt.DecodeError:
+			logger.error('Cant decode token')
 			raise ValueError('Cant decode token')
 		except jwt.ExpiredSignatureError:
+			logger.error('Token expired')
 			raise ValueError('This token is expired')
+	else:
+		logger.error('Error on token received')
+		raise ValueError('Error on token received')

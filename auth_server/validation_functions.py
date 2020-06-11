@@ -1,7 +1,7 @@
 import logging
 import hashlib
-from flask import Blueprint, current_app, request
 from http import HTTPStatus
+from flask import Blueprint, current_app, request
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 
@@ -46,16 +46,16 @@ def is_request_from_admin_user(token):
 				if validate_admin_user(user):
 					logger.debug('Token is from admin user')
 					return True
-				else:
-					logger.error('User is not admin user')
-					return False
-			else:
-				logger.error(result)
+
+				logger.error('User is not admin user')
 				return False
 
+			logger.error(result)
+			return False
+
 		except ValueError as error:
-				logger.error(error)
-				return False
+			logger.error(error)
+			return False
 	else:
 		logger.error('The token is invalid')
 		return False
