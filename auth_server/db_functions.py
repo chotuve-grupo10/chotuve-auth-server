@@ -180,3 +180,22 @@ def get_user(client, mail):
 
 	cursor.close()
 	return result, status_code, row
+
+def delete_user_from_db(client, mail):
+
+	cursor = client.cursor()
+	logger.debug('Deleting user: {user}'.format(user=mail))
+	try:
+		cursor.execute("DELETE FROM users WHERE email = '{mail}'".format(mail=mail))
+		client.commit()
+		logger.debug('User deleted')
+		result = {'Delete':'successfully deleted user with email {0}'.format(mail)}
+		status_code = 200
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not delete user'.format(e=e))
+		result = {'Delete': 'Error {e}'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
