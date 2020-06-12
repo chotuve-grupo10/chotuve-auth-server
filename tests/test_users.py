@@ -53,3 +53,29 @@ def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
+
+def test_modify_user_successfully(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with patch('auth_server.users.modify_user_from_db') as mock_modify_user:
+
+			hed = {'authorization': 'TOKEN'}
+
+			user_information = {'email': 'test@test.com',
+				'password': 'fake password',
+				'full name': 'full name',
+				'phone number': 'phone number', 'profile picture': 'profile picture'}
+
+			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
+
+			response = client.put('/api/modify_user/' + user_email, json=user_information, headers=hed, follow_redirects=False)
+
+			value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
+
+			assert mock.called
+			assert mock_modify_user.called
+			assert json.loads(response.data) == value_expected

@@ -36,7 +36,7 @@ def _modify_user(user_email):
 		logger.debug('Token is from admin user')
 		data = request.json
 		with current_app.app_context():
-			result, status_code = modify_user_from_db(current_app.client, user_email)
+			result, status_code = modify_user_from_db(current_app.client, user_email, data)
 	else:
 		logger.error('Request doesnt come from admin user')
 		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
