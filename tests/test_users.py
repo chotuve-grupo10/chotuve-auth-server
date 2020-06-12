@@ -17,7 +17,7 @@ def test_cant_delete_user_request_doesnt_come_from_admin_user(client):
 		assert mock.called
 		assert json.loads(response.data) == value_expected
 
-def test_cant_delete_user_successfully(client):
+def test_delete_user_successfully(client):
 	with patch('auth_server.users.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
@@ -37,3 +37,19 @@ def test_cant_delete_user_successfully(client):
 			assert mock.called
 			assert mock_delete_user.called
 			assert json.loads(response.data) == value_expected
+
+def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = False
+
+		hed = {'authorization': 'FAKETOKEN'}
+
+		response = client.put('/api/modify_user/' + user_email, headers=hed, follow_redirects=False)
+
+		value_expected = {'Error':'This request doesnt come from an admin user'}
+
+		assert mock.called
+		assert json.loads(response.data) == value_expected
