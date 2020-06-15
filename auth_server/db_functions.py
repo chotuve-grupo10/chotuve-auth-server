@@ -199,3 +199,28 @@ def delete_user_from_db(client, mail):
 
 	cursor.close()
 	return result, status_code
+
+def modify_user_from_db(client, mail, user_information):
+
+	cursor = client.cursor()
+	logger.debug('Modifying user: {user}'.format(user=mail))
+	try:
+		cursor.execute("""UPDATE users SET email='{new_mail}', full_name='{new_name}', phone_number='{new_phone}', profile_picture='{new_picture}'
+						WHERE email='{email}';"""
+					.format(new_mail=user_information['email'],
+					new_name=user_information['full name'],
+					new_phone=user_information['phone number'],
+					new_picture=user_information['profile picture'],
+					email=mail))
+		client.commit()
+		logger.debug('User modified')
+		result = {'Modify':'successfully modified user with email {0}'.format(mail)}
+		status_code = 200
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not modify user'.format(e=e))
+		result = {'Modify': 'Error {e}'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
