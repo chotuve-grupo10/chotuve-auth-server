@@ -32,7 +32,11 @@ def validate_token(token):
 		except jwt.ExpiredSignatureError:
 			result = {'Message': 'expired token'}
 			status_code = 401
-	return result, status_code
+		return result, status_code
+
+	logger.error('No token provided')
+	return {'Error':'No token provided'}, 500
+
 
 def get_user_with_token(token):
 	if token:
@@ -41,8 +45,13 @@ def get_user_with_token(token):
 			logger.debug(token)
 			payload = jwt.decode(token, JWT_SECRET, algorithms='HS256')
 			user = payload['user_id']
+			return user
 		except jwt.DecodeError:
-			user = 'invalid token'
+			logger.error('Cant decode token')
+			raise ValueError('Cant decode token')
 		except jwt.ExpiredSignatureError:
-			user = 'invalid token'
-	return user
+			logger.error('Token expired')
+			raise ValueError('This token is expired')
+	else:
+		logger.error('Error on token received')
+		raise ValueError('Error on token received')
