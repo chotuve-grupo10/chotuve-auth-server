@@ -2,6 +2,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from flask import Blueprint, current_app, request
+from flask_cors import CORS, cross_origin
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -10,7 +11,6 @@ import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 from auth_server.validation_functions import *
-from flask_cors import CORS, cross_origin
 
 
 

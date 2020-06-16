@@ -32,7 +32,7 @@ def create_app(test_config=None):
 
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
-	CORS(app,resources=r'/*', allow_headers='Content-Type')
+	CORS(app, resources=r'/*', allow_headers='Content-Type')
 
 
 
