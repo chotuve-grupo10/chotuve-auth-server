@@ -73,6 +73,7 @@ def _register_user_using_firebase():
 		return result, status_code
 
 @authentication_bp.route('/api/register_admin_user/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/register_admin_user.yml')
 def _register_admin_user():
 
