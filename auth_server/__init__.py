@@ -32,7 +32,9 @@ def create_app(test_config=None):
 
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
-	CORS(app)
+	CORS(app,resources=r'/*', allow_headers='Content-Type')
+
+
 
 	if test_config is None:
 		# load the instance config, if it exists, when not testing

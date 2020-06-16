@@ -10,6 +10,8 @@ import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 from auth_server.validation_functions import *
+from flask_cors import CORS, cross_origin
+
 
 
 
@@ -20,6 +22,7 @@ HTTP_REQUEST = google.auth.transport.requests.Request()
 
 
 authentication_bp = Blueprint('authentication', __name__)
+CORS(authentication_bp)
 logger = logging.getLogger('gunicorn.error')
 
 # TODO: puede ser variable de entorno
@@ -132,6 +135,7 @@ def _register_admin_user():
 ### Login methods ###
 
 @authentication_bp.route('/api/login/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/login.yml')
 def _login_user():
 	data = request.json
