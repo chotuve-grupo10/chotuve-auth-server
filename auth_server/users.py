@@ -56,7 +56,12 @@ def _get_users():
 	if is_request_from_admin_user(token):
 		logger.debug('Token is from admin user')
 		with current_app.app_context():
-			result, status_code = get_all_users(current_app.client)
+			try:
+				result = get_all_users(current_app.client)
+				status_code = 200
+			except Exception as exc:
+				result = {'Error' : str(exc)}
+				status_code = 500
 	else:
 		logger.error('Request doesnt come from admin user')
 		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401

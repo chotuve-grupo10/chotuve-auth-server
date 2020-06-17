@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import patch
 import simplejson as json
 
@@ -96,6 +97,24 @@ def test_cant_get_users_request_doesnt_come_from_admin_user(client):
 		assert mock.called
 		assert json.loads(response.data) == value_expected
 
+def test_cant_get_users_problem_with_db(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with pytest.raises(Exception) as error_received:
+
+			hed = {'authorization': 'TOKEN'}
+
+			response = client.get('/api/users/', headers=hed, follow_redirects=False)
+
+			value_expected =  {'Error' : str(error_received)}
+
+			assert mock.called
+			assert json.loads(response.data) == value_expected
+
 def test_get_users_successfully(client):
 	with patch('auth_server.users.is_request_from_admin_user') as mock:
 
@@ -121,7 +140,7 @@ def test_get_users_successfully(client):
 					'profile picture': 'profile picture'
 				}])
 
-			mock_get_all_users.return_value = users, 200
+			mock_get_all_users.return_value = users
 
 			response = client.get('/api/users/', headers=hed, follow_redirects=False)
 

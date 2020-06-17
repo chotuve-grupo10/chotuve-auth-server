@@ -195,16 +195,13 @@ def get_all_users(client):
 		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}'".format(value=0))
 		users = cursor.fetchall()
 		logger.debug('Obtained all users')
-		result = json.dumps([serialize_user(user) for user in users])
-		status_code = 200
+		cursor.close()
+		return json.dumps([serialize_user(user) for user in users])
 	except Exception as e:
 		client.rollback()
+		cursor.close()
 		logger.error('Error {e}. Could not get users'.format(e=e))
-		result = {'Error': 'Error {e}. Problems getting users'.format(e=e)}
-		status_code = 500
-
-	cursor.close()
-	return result, status_code
+		raise Exception(str(e))
 
 def delete_user_from_db(client, mail):
 
