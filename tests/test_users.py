@@ -79,3 +79,19 @@ def test_modify_user_successfully(client):
 			assert mock.called
 			assert mock_modify_user.called
 			assert json.loads(response.data) == value_expected
+
+def test_cant_get_users_request_doesnt_come_from_admin_user(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = False
+
+		hed = {'authorization': 'FAKETOKEN'}
+
+		response = client.get('/api/users/', headers=hed, follow_redirects=False)
+
+		value_expected = {'Error':'This request doesnt come from an admin user'}
+
+		assert mock.called
+		assert json.loads(response.data) == value_expected

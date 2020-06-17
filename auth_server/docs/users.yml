@@ -1,0 +1,23 @@
+Solicitud de listado de usuarios registrados.
+---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+parameters:
+  - in: header
+    name: authorization
+    description: token
+    type: string
+    required: true
+responses:
+  200:
+    description: list of registered users.
+  401:
+    description: you dont have the necessary permissions to list users or your token is invalid.
+  500:
+    description: there is an internal problem with the auth server.
