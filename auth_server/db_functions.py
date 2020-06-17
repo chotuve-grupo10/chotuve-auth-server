@@ -1,8 +1,14 @@
 import logging
 import hashlib
+import simplejson as json
 from flask import current_app
 from psycopg2 import errors as psql_errors
 from auth_server.random_string import *
+
+EMAIL_POSITION = 0
+FULL_NAME_POSITION = 1
+PHONE_NUMBER_POSITION = 2
+PROFILE_PICTURE_POSITION = 3
 
 create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
@@ -181,6 +187,25 @@ def get_user(client, mail):
 	cursor.close()
 	return result, status_code, row
 
+def get_all_users(client):
+
+	cursor = client.cursor()
+	logger.debug('Getting all users')
+	try:
+		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}'".format(value=0))
+		users = cursor.fetchall()
+		logger.debug('Obtained all users')
+		result = json.dumps([serialize_user(user) for user in users])
+		status_code = 200
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not get users'.format(e=e))
+		result = {'Error': 'Error {e}. Problems getting users'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
+
 def delete_user_from_db(client, mail):
 
 	cursor = client.cursor()
@@ -224,3 +249,11 @@ def modify_user_from_db(client, mail, user_information):
 
 	cursor.close()
 	return result, status_code
+
+def serialize_user(user):
+	return {
+		'email' : user[EMAIL_POSITION],
+		'full name' : user[FULL_NAME_POSITION],
+		'phone number' : user[PHONE_NUMBER_POSITION],
+		'profile picture': user[PROFILE_PICTURE_POSITION]
+	}

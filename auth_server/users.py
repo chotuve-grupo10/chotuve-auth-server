@@ -55,8 +55,8 @@ def _get_users():
 
 	if is_request_from_admin_user(token):
 		logger.debug('Token is from admin user')
-		#with current_app.app_context():
-			# result, status_code = modify_user_from_db(current_app.client, user_email, data)
+		with current_app.app_context():
+			result, status_code = get_all_users(current_app.client)
 	else:
 		logger.error('Request doesnt come from admin user')
 		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
