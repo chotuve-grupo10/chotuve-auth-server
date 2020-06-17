@@ -3,6 +3,7 @@ import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from flask import Blueprint, current_app, request
+from flask_cors import CORS, cross_origin
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -15,12 +16,14 @@ from auth_server.validation_functions import *
 
 
 
+
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
 
 authentication_bp = Blueprint('authentication', __name__)
+CORS(authentication_bp)
 logger = logging.getLogger('gunicorn.error')
 
 # TODO: puede ser variable de entorno
@@ -71,6 +74,7 @@ def _register_user_using_firebase():
 		return result, status_code
 
 @authentication_bp.route('/api/register_admin_user/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/register_admin_user.yml')
 def _register_admin_user():
 
@@ -121,6 +125,7 @@ def _register_admin_user():
 ### Login methods ###
 
 @authentication_bp.route('/api/login/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/login.yml')
 def _login_user():
 	data = request.json

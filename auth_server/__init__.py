@@ -6,6 +6,7 @@ from psycopg2 import errors as psql_errors
 from flask import Flask, request
 from flasgger import Swagger
 from flasgger import swag_from
+from flask_cors import CORS
 import simplejson as json
 from auth_server.authentication import authentication_bp
 from auth_server.users import users_bp
@@ -32,6 +33,9 @@ def create_app(test_config=None):
 
 	app.config.from_mapping(SECRET_KEY='dev')
 	Swagger(app)
+	CORS(app, resources=r'/*', allow_headers='Content-Type')
+
+
 
 	if test_config is None:
 		# load the instance config, if it exists, when not testing
