@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import patch
 import simplejson as json
 
@@ -79,3 +80,72 @@ def test_modify_user_successfully(client):
 			assert mock.called
 			assert mock_modify_user.called
 			assert json.loads(response.data) == value_expected
+
+def test_cant_get_users_request_doesnt_come_from_admin_user(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = False
+
+		hed = {'authorization': 'FAKETOKEN'}
+
+		response = client.get('/api/users/', headers=hed, follow_redirects=False)
+
+		value_expected = {'Error':'This request doesnt come from an admin user'}
+
+		assert mock.called
+		assert json.loads(response.data) == value_expected
+
+def test_cant_get_users_problem_with_db(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with pytest.raises(Exception) as error_received:
+
+			hed = {'authorization': 'TOKEN'}
+
+			response = client.get('/api/users/', headers=hed, follow_redirects=False)
+
+			value_expected =  {'Error' : str(error_received)}
+
+			assert mock.called
+			assert json.loads(response.data) == value_expected
+
+def test_get_users_successfully(client):
+	with patch('auth_server.users.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with patch('auth_server.users.get_all_users') as mock_get_all_users:
+
+			hed = {'authorization': 'TOKEN'}
+
+			users =json.dumps([
+				{
+					'email': 'test@test.com',
+					'full name': 'full name',
+					'phone number': 'phone number',
+					'profile picture': 'profile picture'
+				},
+				{
+					'email': 'test@test.com',
+					'full name': 'full name',
+					'phone number': 'phone number',
+					'profile picture': 'profile picture'
+				}])
+
+			mock_get_all_users.return_value = users
+
+			response = client.get('/api/users/', headers=hed, follow_redirects=False)
+
+			value_expected = users
+
+			assert mock.called
+			assert mock_get_all_users.called
+			assert json.loads(response.data) == json.loads(value_expected)
