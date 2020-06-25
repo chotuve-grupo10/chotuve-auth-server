@@ -12,8 +12,10 @@ import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 from auth_server.validation_functions import *
-
-
+import auth_server.body_parser as body_parser
+from auth_server.persistence.user_persistence import UserPersistence
+from http import HTTPStatus
+from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 
 
 
@@ -35,12 +37,20 @@ firebase_app = firebase_admin.initialize_app(cred)
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-	data = request.json
-
-	with current_app.app_context():
-		result, status_code = insert_local_user_into_users_db(current_app.client, data)
-	logger.debug('User was inserted')
-	return result, status_code
+  try:
+    data = request.json
+    user = body_parser.parse_regular_user(data)
+    user_persistence = UserPersistence(current_app.db)
+    user_persistence.save(user)
+    result = {'Registration': 'Successfully registered new user with email {0}'.format(user.email)}
+  #	with current_app.app_context():
+  #		result, status_code = insert_local_user_into_users_db(current_app.client, data)
+    logger.debug('User was inserted')
+    return result, HTTPStatus.CREATED
+  except UserAlreadyRegisteredException:
+    logger.error('This user already exists!')
+    result = {'Registration': 'This user already exists!'}
+    return result, HTTPStatus.CONFLICT
 
 
 @authentication_bp.route('/api/register_with_firebase/', methods=['POST'])

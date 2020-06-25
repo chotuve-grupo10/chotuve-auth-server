@@ -9,7 +9,7 @@ def test_save_password_user(postgresql_db):
   create_all(session)
   assert query_first_user(session) is None
   user_to_save = User('aa@gmail.com', 'aaa', 'John Doe', '555-5555', None, False, False)
-  sut = UserPersistence(session)
+  sut = UserPersistence(postgresql_db)
   sut.save(user_to_save)
   row = query_first_user(session)
   assert row is not None
@@ -21,7 +21,7 @@ def test_save_existent_user(postgresql_db):
   session = postgresql_db.session
   create_all(session)
   saved_user = User('aa@gmail.com', 'bbb', 'Jane Doe', '111-1111', None, False, False)
-  sut = UserPersistence(session)
+  sut = UserPersistence(postgresql_db)
   sut.save(saved_user)
   with pytest.raises(UserAlreadyRegisteredException):
     user_to_save = User('aa@gmail.com', 'aaa', 'John Doe', '555-5555', None, False, False)

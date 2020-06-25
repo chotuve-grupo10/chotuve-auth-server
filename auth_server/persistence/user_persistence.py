@@ -6,7 +6,7 @@ class UserPersistence():
     self.db = db_connection
   
   def save(self, user):
-    if self.db.query(User).get(user.email) is not None:
+    if self.db.session.query(User).get(user.email) is not None:
       raise UserAlreadyRegisteredException
-    self.db.add(user)
-    self.db.commit()
+    self.db.session.add(user)
+    self.db.session.commit()

@@ -1,19 +1,19 @@
 from unittest.mock import patch
 import simplejson as json
+from auth_server.persistence.user_persistence import UserPersistence
 # from auth_server.db_functions import insert_into_users_db
+from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 
 def test_register_user_succesfully(client):
-	with patch('auth_server.authentication.insert_local_user_into_users_db') as mock:
+	with patch.object(UserPersistence,'save') as mock:
 		user_information = {'email': 'this_email_should_not_be_saved@test.com',
 				'password': 'fake password',
 				'full name': 'full name',
-				'phone number': 'phone number', 'profile picture': 'profile picture',
-				'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
+				'phone number': 'phone number', 
+        'profile picture': 'profile picture',
+		}
 
 		result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
-		status_code = 201
-
-		mock.return_value = result, status_code
 
 		response = client.post('/api/register/', json=user_information,
 							   follow_redirects=False)
@@ -22,27 +22,41 @@ def test_register_user_succesfully(client):
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
+		assert response.status_code == 201
+
+def test_register_user_succesfully_e2e(client_with_db):
+		user_information = {'email': 'this_email_should_not_be_saved@test.com',
+				'password': 'fake password',
+				'full name': 'full name',
+				'phone number': 'phone number', 
+        'profile picture': 'profile picture',
+		}
+
+		response = client_with_db.post('/api/register/', json=user_information,
+							   follow_redirects=False)
+		value_expected = {'Registration' :
+			'Successfully registered new user with email {0}'.format(user_information['email'])}
+		assert json.loads(response.data) == value_expected  
+		assert response.status_code == 201
+
+def raise_already_registered_exception(cls, *args, **kwargs):
+  raise UserAlreadyRegisteredException
 
 def test_register_user_already_registered(client):
-	with patch('auth_server.authentication.insert_local_user_into_users_db') as mock:
+	with patch.object(UserPersistence,'save', new=raise_already_registered_exception) as mock:
 		user_information = {'email': 'diegote@gmail.com',
 				'password': 'fake password',
 				'full name': 'full name',
 				'phone number': 'phone number', 'profile picture': 'profile picture',
 				'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
 
-		result = {'Registration': 'This user already exists!'}
-		status_code = 409
-
-		mock.return_value = result, status_code
-
 		response = client.post('/api/register/', json=user_information,
 							   follow_redirects=False)
 		value_expected = {'Registration' :
 			'This user already exists!'}
 
-		assert mock.called
 		assert json.loads(response.data) == value_expected
+		assert response.status_code == 409
 
 def test_login_user_succesful(client):
 	with patch('auth_server.authentication.get_user') as mock_get_user:
