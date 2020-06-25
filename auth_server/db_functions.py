@@ -1,8 +1,14 @@
 import logging
 import hashlib
+import simplejson as json
 from flask import current_app
 from psycopg2 import errors as psql_errors
 from auth_server.random_string import *
+
+EMAIL_POSITION = 0
+FULL_NAME_POSITION = 1
+PHONE_NUMBER_POSITION = 2
+PROFILE_PICTURE_POSITION = 3
 
 create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
@@ -85,6 +91,44 @@ def insert_local_user_into_users_db(client, user_information):
 	cursor.close()
 	return result, status_code
 
+def insert_admin_user_into_users_db(client, user_information):
+
+	# with current_app.app_context():
+	client = current_app.client
+	sal = random_string(6)
+	pimienta = random_string(1)
+	cursor = client.cursor()
+	try:
+		cursor.execute(
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+					.format(email=user_information['email'],
+					full_name=user_information['full name'],
+					phone_number=user_information['phone number'],
+					profile_picture=user_information['profile picture'],
+					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
+					salt=sal,
+					firebase_user='0',
+					admin_user='1'))
+
+		client.commit()
+		logger.debug('Successfully registered new admin user with email {0}'.format(user_information['email']))
+		result = {'Registration': 'Successfully registered new admin user with email {0}'.format(user_information['email'])}
+		status_code = 201		# Created
+	except psql_errors.UniqueViolation:
+		client.rollback()
+		logger.error('This user already exists!')
+		result = {'Registration': 'This user already exists!'}
+		status_code = 409		# Conflict
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not insert new user'.format(e=e))
+		result = {'Registration': 'Error {e}. Could not insert new user'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
+
 def insert_firebase_user_into_users_db(client, claims):
 
 	cursor = client.cursor()
@@ -142,3 +186,71 @@ def get_user(client, mail):
 
 	cursor.close()
 	return result, status_code, row
+
+def get_all_users(client):
+
+	cursor = client.cursor()
+	logger.debug('Getting all users')
+	try:
+		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}'".format(value=0))
+		users = cursor.fetchall()
+		logger.debug('Obtained all users')
+		cursor.close()
+		return json.dumps([serialize_user(user) for user in users])
+	except Exception as e:
+		client.rollback()
+		cursor.close()
+		logger.error('Error {e}. Could not get users'.format(e=e))
+		raise Exception(str(e))
+
+def delete_user_from_db(client, mail):
+
+	cursor = client.cursor()
+	logger.debug('Deleting user: {user}'.format(user=mail))
+	try:
+		cursor.execute("DELETE FROM users WHERE email = '{mail}'".format(mail=mail))
+		client.commit()
+		logger.debug('User deleted')
+		result = {'Delete':'successfully deleted user with email {0}'.format(mail)}
+		status_code = 200
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not delete user'.format(e=e))
+		result = {'Delete': 'Error {e}'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
+
+def modify_user_from_db(client, mail, user_information):
+
+	cursor = client.cursor()
+	logger.debug('Modifying user: {user}'.format(user=mail))
+	try:
+		cursor.execute("""UPDATE users SET email='{new_mail}', full_name='{new_name}', phone_number='{new_phone}', profile_picture='{new_picture}'
+						WHERE email='{email}';"""
+					.format(new_mail=user_information['email'],
+					new_name=user_information['full name'],
+					new_phone=user_information['phone number'],
+					new_picture=user_information['profile picture'],
+					email=mail))
+		client.commit()
+		logger.debug('User modified')
+		result = {'Modify':'successfully modified user with email {0}'.format(mail)}
+		status_code = 200
+	except Exception as e:
+		client.rollback()
+		logger.error('Error {e}. Could not modify user'.format(e=e))
+		result = {'Modify': 'Error {e}'.format(e=e)}
+		status_code = 500
+
+	cursor.close()
+	return result, status_code
+
+def serialize_user(user):
+	return {
+		'email' : user[EMAIL_POSITION],
+		'full name' : user[FULL_NAME_POSITION],
+		'phone number' : user[PHONE_NUMBER_POSITION],
+		'profile picture': user[PROFILE_PICTURE_POSITION]
+	}

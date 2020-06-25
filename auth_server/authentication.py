@@ -1,7 +1,9 @@
+import logging
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
 from flask import Blueprint, current_app, request
+from flask_cors import CORS, cross_origin
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -14,12 +16,14 @@ from auth_server.validation_functions import *
 
 
 
+
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
 
 
 authentication_bp = Blueprint('authentication', __name__)
+CORS(authentication_bp)
 logger = logging.getLogger('gunicorn.error')
 
 # TODO: puede ser variable de entorno
@@ -69,6 +73,24 @@ def _register_user_using_firebase():
 		logger.error(invalid_token_error)
 		return result, status_code
 
+@authentication_bp.route('/api/register_admin_user/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
+@swag_from('docs/register_admin_user.yml')
+def _register_admin_user():
+
+	id_token = request.headers.get('authorization', None)
+
+	if is_request_from_admin_user(id_token):
+		logger.debug('Token is from admin user')
+		data = request.json
+		with current_app.app_context():
+			result, status_code = insert_admin_user_into_users_db(current_app.client, data)
+	else:
+		logger.error('Request doesnt come from admin user')
+		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
+
+	return result, status_code
+
 ## La realidad es que no importa la red social lo que verificamos es el token de firebase.
 ## Por ahora lo dejo por si se me esta pasando algo, pero eventualmente vamos a borrar este endpoint
 
@@ -103,6 +125,7 @@ def _register_user_using_firebase():
 ### Login methods ###
 
 @authentication_bp.route('/api/login/', methods=['POST'])
+@cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/login.yml')
 def _login_user():
 	data = request.json
