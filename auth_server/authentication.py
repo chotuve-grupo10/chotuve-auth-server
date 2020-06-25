@@ -43,8 +43,6 @@ def _register_user():
     user_persistence = UserPersistence(current_app.db)
     user_persistence.save(user)
     result = {'Registration': 'Successfully registered new user with email {0}'.format(user.email)}
-  #	with current_app.app_context():
-  #		result, status_code = insert_local_user_into_users_db(current_app.client, data)
     logger.debug('User was inserted')
     return result, HTTPStatus.CREATED
   except UserAlreadyRegisteredException:
