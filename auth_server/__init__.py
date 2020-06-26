@@ -19,7 +19,7 @@ def create_app(test_config=None, db_connection=None):
 	app = Flask(__name__, instance_relative_config=True)
 
 	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
-	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 	app.db = db_connection or SQLAlchemy(app)
 
 	parameters = urlparse(os.environ.get('DATABASE_URL'))
