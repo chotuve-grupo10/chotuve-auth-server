@@ -23,9 +23,10 @@ class User(Base):
     self.full_name = full_name
     self.phone_number = phone_number
     self.profile_picture = profile_picture
-    self.hash = hashlib.sha512((password + sal + pimienta).encode('utf-8')).hexdigest()
-    self.salt = sal
+    self.hash = hashlib.sha512((password + sal + pimienta).encode('utf-8')).hexdigest() if password else 0
+    self.salt = sal if password else 0
     self.firebase_user = 1 if is_firebase_user else 0
     self.admin_user = 1 if is_admin_user else 0
     
-
+  def is_firebase_user(self):
+    return self.firebase_user == 1

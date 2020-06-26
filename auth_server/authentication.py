@@ -16,8 +16,8 @@ import auth_server.body_parser as body_parser
 from auth_server.persistence.user_persistence import UserPersistence
 from http import HTTPStatus
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
-
-
+from auth_server.exceptions.user_not_found_exception import UserNotFoundException
+from auth_server.model.user import User
 
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
@@ -54,50 +54,50 @@ def _register_user():
 @authentication_bp.route('/api/register_with_firebase/', methods=['POST'])
 @swag_from('docs/register_with_firebase.yml')
 def _register_user_using_firebase():
-	try:
-		id_token = request.headers.get('authorization', None)
-		# En claims se almacena mas informacion de usuario como mail, y datos personales
-		claims = firebase_admin.auth.verify_id_token(id_token)
-		#Si firebase no reconoce el token
-		if not claims:
-			logger.debug('Token incorrecto')
-			result = {'Register': 'invalid firebase token'}
-			status_code = 401
-		else:
-			logger.debug('Valid token')
-			result = {'Register': 'valid firebase token'}
-			status_code = 200
-			with current_app.app_context():
-				result, status_code = insert_firebase_user_into_users_db(current_app.client, claims)
-		return result, status_code
-	except ValueError as exc:
-		result = {'Register': 'Error'}
-		status_code = 401
-		logger.error(exc)
-		return result, status_code
-	except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
-		result = {'Register': 'invalid token'}
-		status_code = 401
-		logger.error(invalid_token_error)
-		return result, status_code
+  try:
+    id_token = request.headers.get('authorization', None)
+    # En claims se almacena mas informacion de usuario como mail, y datos personales
+    claims = firebase_admin.auth.verify_id_token(id_token)
+    #Si firebase no reconoce el token
+    if not claims:
+      logger.debug('Token incorrecto')
+      result = {'Register': 'invalid firebase token'}
+      status_code = 401
+    else:
+      logger.debug('Valid token')
+      result = {'Register': 'valid firebase token'}
+      status_code = 200
+      with current_app.app_context():
+        result, status_code = insert_firebase_user_into_users_db(current_app.client, claims)
+    return result, status_code
+  except ValueError as exc:
+    result = {'Register': 'Error'}
+    status_code = 401
+    logger.error(exc)
+    return result, status_code
+  except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
+    result = {'Register': 'invalid token'}
+    status_code = 401
+    logger.error(invalid_token_error)
+    return result, status_code
 
 @authentication_bp.route('/api/register_admin_user/', methods=['POST'])
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/register_admin_user.yml')
 def _register_admin_user():
 
-	id_token = request.headers.get('authorization', None)
+  id_token = request.headers.get('authorization', None)
 
-	if is_request_from_admin_user(id_token):
-		logger.debug('Token is from admin user')
-		data = request.json
-		with current_app.app_context():
-			result, status_code = insert_admin_user_into_users_db(current_app.client, data)
-	else:
-		logger.error('Request doesnt come from admin user')
-		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
+  if is_request_from_admin_user(id_token):
+    logger.debug('Token is from admin user')
+    data = request.json
+    with current_app.app_context():
+      result, status_code = insert_admin_user_into_users_db(current_app.client, data)
+  else:
+    logger.error('Request doesnt come from admin user')
+    result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
 
-	return result, status_code
+  return result, status_code
 
 ## La realidad es que no importa la red social lo que verificamos es el token de firebase.
 ## Por ahora lo dejo por si se me esta pasando algo, pero eventualmente vamos a borrar este endpoint
@@ -136,73 +136,82 @@ def _register_admin_user():
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/login.yml')
 def _login_user():
-	data = request.json
-	logger.debug(data['email'])
-	with current_app.app_context():
-		result, status_code, user = get_user(current_app.client, data['email'])
-		if status_code == 200:
-			if validar_usuario(user, data['password']):
-				logger.debug('Usuario logueado con exito')
-				token = generate_auth_token(data['email'])
-				logger.debug('This is the token {0}'.format(token))
-				result = {'Token': token}
-			else:
-				logger.debug('La password es incorrecta')
-				result = {'Login': 'invalid password'}
-				status_code = 401
-	return result, status_code
-	# para cuando nos llegue la request desde Androide
-	# user_request = request.headers['AuthenticationHeader']
-	# auth = HTTPBasicAuth('taller', 'notanseguro')
-	# auth_login = '/api/login/'
-	# response_auth_server = get_auth_server_login(os.environ.get('AUTH_SERVER_URL') +
-	# 											 auth_login, auth)
-	# if response_auth_server.status_code == 200:
-	# 	# app.logger.debug('Response from auth server login is 200')
-	# 	response = {'Successful login'}
-	# 	response.status_code = 200
-	# else:
-	# 	# app.logger.debug('Response from auth server login is {0}'.
-	# 	#                  format(response_auth_server.status_code))
-	# 	response = {'Login failed'}
-	# 	response.status_code = 401
-	# current_app.logger.debug('Login was successful since it does anything at all')
-	# return {'Login': 'was successful'}
+  data = request.json
+  logger.debug(data['email'])
+  with current_app.app_context():
+    result, status_code, user = get_user(current_app.client, data['email'])
+    if status_code == 200:
+      if validar_usuario(user, data['password']):
+        logger.debug('Usuario logueado con exito')
+        token = generate_auth_token(data['email'])
+        logger.debug('This is the token {0}'.format(token))
+        result = {'Token': token}
+      else:
+        logger.debug('La password es incorrecta')
+        result = {'Login': 'invalid password'}
+        status_code = 401
+  return result, status_code
+  # para cuando nos llegue la request desde Androide
+  # user_request = request.headers['AuthenticationHeader']
+  # auth = HTTPBasicAuth('taller', 'notanseguro')
+  # auth_login = '/api/login/'
+  # response_auth_server = get_auth_server_login(os.environ.get('AUTH_SERVER_URL') +
+  # 											 auth_login, auth)
+  # if response_auth_server.status_code == 200:
+  # 	# app.logger.debug('Response from auth server login is 200')
+  # 	response = {'Successful login'}
+  # 	response.status_code = 200
+  # else:
+  # 	# app.logger.debug('Response from auth server login is {0}'.
+  # 	#                  format(response_auth_server.status_code))
+  # 	response = {'Login failed'}
+  # 	response.status_code = 401
+  # current_app.logger.debug('Login was successful since it does anything at all')
+  # return {'Login': 'was successful'}
 
 @authentication_bp.route('/api/login_with_firebase/', methods=['POST'])
 @swag_from('docs/login_with_firebase.yml')
 def _login_user_using_firebase():
-	try:
-		id_token = request.headers.get('authorization', None)
-		claims = firebase_admin.auth.verify_id_token(id_token)
-		if not claims:
-			logger.debug('Response from auth server login is 401')
-			result = {'Login': 'invalid firebase token'}
-			status_code = 401
-		else:
-			with current_app.app_context():
-				result, status_code, user = get_user(current_app.client, claims.get('email'))
-				if status_code == 200:
-					if validate_firebase_user(user):
-						logger.debug('Usuario logueado con exito')
-						token = generate_auth_token(claims.get('email'))
-						logger.debug('This is the token {0}'.format(token))
-						result = {'Token': token}
-					else:
-						logger.debug('User not registered with Firebase')
-						result = {'Login': 'user not registered with Firebase'}
-						status_code = 401
-		return result, status_code
-	except ValueError as exc:
-		result = {'Login': 'Error'}
-		status_code = 401
-		logger.error(exc)
-		return result, status_code
-	except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
-		result = {'Register': str(invalid_token_error)}
-		status_code = 401
-		logger.error(invalid_token_error)
-		return result, status_code
+  try:
+    id_token = request.headers.get('authorization', None)
+    claims = firebase_admin.auth.verify_id_token(id_token)
+    if not claims or not claims.get('email'):
+      logger.debug('Response from auth server login is 401')
+      result = {'Login': 'invalid firebase token'}
+      status_code = 401
+      return result, status_code
+
+    user_persistence = UserPersistence(current_app.db)
+    user = None
+    try:
+      user = user_persistence.get_user_by_email(claims.get('email'))
+    except UserNotFoundException:
+      user = User(claims.get('email'), None, claims.get('name'), 'NULL', 
+              claims.get('picture'), True, False)
+      user_persistence.save(user)
+
+    if user.is_firebase_user():
+      logger.debug('Usuario logueado con exito')
+      token = generate_auth_token(claims.get('email'))
+      logger.debug('This is the token {0}'.format(token))
+      result = {'Token': token}
+      status_code = HTTPStatus.OK
+    else:
+      logger.debug('User not registered with Firebase')
+      result = {'Login': 'user not registered with Firebase'}
+      status_code = 401
+    return result, status_code
+  except ValueError as exc:
+    result = {'Login': 'Error'}
+    status_code = 401
+    logger.error(exc)
+    return result, status_code
+  except firebase_admin._auth_utils.InvalidIdTokenError as invalid_token_error:
+    result = {'Register': str(invalid_token_error)}
+    status_code = 401
+    logger.error(invalid_token_error)
+    return result, status_code
+
 
 ## Misma historia que mas arriba.
 ## El login de firebase seria general, no necesitamos determinar la red social.
@@ -239,9 +248,9 @@ def _login_user_using_firebase():
 @authentication_bp.route('/api/validate_token/', methods=['GET'])
 @swag_from('docs/validate_token.yml')
 def _validate_token():
-	jwt_token = request.headers.get('authorization', None)
-	result, status_code = validate_token(jwt_token)
-	return result, status_code
+  jwt_token = request.headers.get('authorization', None)
+  result, status_code = validate_token(jwt_token)
+  return result, status_code
 
 
 #### Updating methods ###
@@ -249,9 +258,9 @@ def _validate_token():
 @authentication_bp.route('/api/forgot_password/', methods=['GET'])
 @swag_from('docs/forgot_password.yml')
 def _forgot_password():
-	return {}
+  return {}
 
 @authentication_bp.route('/api/reset_password/', methods=['GET'])
 @swag_from('docs/reset_password.yml')
 def _reset_password():
-	return {}
+  return {}
