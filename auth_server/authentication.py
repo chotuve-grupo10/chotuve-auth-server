@@ -1,4 +1,5 @@
 import logging
+from http import HTTPStatus
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import auth
@@ -12,10 +13,11 @@ import google.oauth2.id_token
 from auth_server.db_functions import *
 from auth_server.token_functions import *
 from auth_server.validation_functions import *
-
-
-
-
+import auth_server.body_parser as body_parser
+from auth_server.persistence.user_persistence import UserPersistence
+from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
+from auth_server.exceptions.user_not_found_exception import UserNotFoundException
+from auth_server.model.user import User
 
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
@@ -35,12 +37,18 @@ firebase_app = firebase_admin.initialize_app(cred)
 @authentication_bp.route('/api/register/', methods=['POST'])
 @swag_from('docs/register.yml')
 def _register_user():
-	data = request.json
-
-	with current_app.app_context():
-		result, status_code = insert_local_user_into_users_db(current_app.client, data)
-	logger.debug('User was inserted')
-	return result, status_code
+	try:
+		data = request.json
+		user = body_parser.parse_regular_user(data)
+		user_persistence = UserPersistence(current_app.db)
+		user_persistence.save(user)
+		result = {'Registration': 'Successfully registered new user with email {0}'.format(user.email)}
+		logger.debug('User was inserted')
+		return result, HTTPStatus.CREATED
+	except UserAlreadyRegisteredException:
+		logger.error('This user already exists!')
+		result = {'Registration': 'This user already exists!'}
+		return result, HTTPStatus.CONFLICT
 
 
 @authentication_bp.route('/api/register_with_firebase/', methods=['POST'])
@@ -167,23 +175,31 @@ def _login_user_using_firebase():
 	try:
 		id_token = request.headers.get('authorization', None)
 		claims = firebase_admin.auth.verify_id_token(id_token)
-		if not claims:
+		if not claims or not claims.get('email'):
 			logger.debug('Response from auth server login is 401')
 			result = {'Login': 'invalid firebase token'}
 			status_code = 401
+			return result, status_code
+
+		user_persistence = UserPersistence(current_app.db)
+		user = None
+		try:
+			user = user_persistence.get_user_by_email(claims.get('email'))
+		except UserNotFoundException:
+			user = User(claims.get('email'), None, claims.get('name'), 'NULL',
+							claims.get('picture'), True, False)
+			user_persistence.save(user)
+
+		if user.is_firebase_user():
+			logger.debug('Usuario logueado con exito')
+			token = generate_auth_token(claims.get('email'))
+			logger.debug('This is the token {0}'.format(token))
+			result = {'Token': token}
+			status_code = HTTPStatus.OK
 		else:
-			with current_app.app_context():
-				result, status_code, user = get_user(current_app.client, claims.get('email'))
-				if status_code == 200:
-					if validate_firebase_user(user):
-						logger.debug('Usuario logueado con exito')
-						token = generate_auth_token(claims.get('email'))
-						logger.debug('This is the token {0}'.format(token))
-						result = {'Token': token}
-					else:
-						logger.debug('User not registered with Firebase')
-						result = {'Login': 'user not registered with Firebase'}
-						status_code = 401
+			logger.debug('User not registered with Firebase')
+			result = {'Login': 'user not registered with Firebase'}
+			status_code = 401
 		return result, status_code
 	except ValueError as exc:
 		result = {'Login': 'Error'}
@@ -195,6 +211,7 @@ def _login_user_using_firebase():
 		status_code = 401
 		logger.error(invalid_token_error)
 		return result, status_code
+
 
 ## Misma historia que mas arriba.
 ## El login de firebase seria general, no necesitamos determinar la red social.

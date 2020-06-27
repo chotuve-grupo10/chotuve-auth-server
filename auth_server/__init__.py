@@ -8,14 +8,19 @@ from flasgger import Swagger
 from flasgger import swag_from
 from flask_cors import CORS
 import simplejson as json
+from flask_sqlalchemy import SQLAlchemy
 from auth_server.authentication import authentication_bp
 from auth_server.users import users_bp
 from auth_server.db_functions import initialize_db
 from auth_server.token_functions import *
 
-def create_app(test_config=None):
+def create_app(test_config=None, db_connection=None):
 	# create and configure the app
 	app = Flask(__name__, instance_relative_config=True)
+
+	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	app.db = db_connection or SQLAlchemy(app)
 
 	parameters = urlparse(os.environ.get('DATABASE_URL'))
 	username = parameters.username

@@ -1,4 +1,5 @@
-Recibe una solicitud de login utilizando Firebase
+Recibe una solicitud de login utilizando Firebase. Si el usuario no está registrado, 
+se lo registra automáticamente
 ---
 components:
   securitySchemes:
