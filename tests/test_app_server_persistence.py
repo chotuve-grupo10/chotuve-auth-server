@@ -3,6 +3,7 @@ import db.migrations
 import pytest
 from auth_server.model.app_server import AppServer
 from auth_server.persistence.app_server_persistence import AppServerPersistence
+from auth_server.exceptions.app_server_not_found_exception import AppServerNotFoundException
 
 def create_appservers_table(conn):
     migrations = db.migrations.all_migrations()
@@ -22,3 +23,10 @@ def test_save_app_server_successfully(postgresql_db):
     row = query_first_app_server(session)
     assert row is not None
     assert row[1].month == datetime.datetime.now().month
+
+def test_app_server_with_given_token_not_found(postgresql_db):
+    session = postgresql_db.session
+    create_appservers_table(session)
+    sut = AppServerPersistence(postgresql_db)
+    with pytest.raises():
+        user = sut.get_app_server_by_token('5a3d6026-2f5c-4957-b52d-c094b50774db')
