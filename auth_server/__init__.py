@@ -11,6 +11,7 @@ import simplejson as json
 from flask_sqlalchemy import SQLAlchemy
 from auth_server.authentication import authentication_bp
 from auth_server.users import users_bp
+from auth_server.app_servers import app_servers_bp
 from auth_server.db_functions import initialize_db
 from auth_server.token_functions import *
 
@@ -69,6 +70,7 @@ def create_app(test_config=None, db_connection=None):
 	with app.app_context():
 		app.register_blueprint(authentication_bp)
 		app.register_blueprint(users_bp)
+		app.register_blueprint(app_servers_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')

@@ -10,7 +10,7 @@ class AppServer(Base):
   registered_at = Column(DateTime)
 
   def __init__(self):
-    self.token = uuid.uuid4()
+    self.token = str(uuid.uuid4())
     self.registered_at = datetime.datetime.now()
 
   def __repr__(self):
