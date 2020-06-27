@@ -1,3 +1,5 @@
+from auth_server.db_functions import create_app_servers_table_command
+
 create_table_users = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
 						full_name VARCHAR(255) NOT NULL,
@@ -12,4 +14,5 @@ create_table_users = """CREATE TABLE Users (
 def all_migrations():
   migration_list = []
   migration_list.append(create_table_users)
+  migration_list.append(create_app_servers_table_command)
   return migration_list
