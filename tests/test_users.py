@@ -3,7 +3,7 @@ from unittest.mock import patch
 import simplejson as json
 
 def test_cant_delete_user_request_doesnt_come_from_admin_user(client):
-	with patch('auth_server.users.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
@@ -13,13 +13,13 @@ def test_cant_delete_user_request_doesnt_come_from_admin_user(client):
 
 		response = client.delete('/api/delete_user/' + user_email, headers=hed, follow_redirects=False)
 
-		value_expected = {'Error':'This request doesnt come from an admin user'}
+		value_expected = {'Error' : 'Request doesnt come from admin user'}
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
 
 def test_delete_user_successfully(client):
-	with patch('auth_server.users.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
