@@ -9,7 +9,7 @@ from auth_server.decorators.admin_user_required_decorator import admin_user_requ
 users_bp = Blueprint('users', __name__)
 logger = logging.getLogger('gunicorn.error')
 
-@users_bp.route('/api/delete_user/<user_email>', methods=['DELETE'])
+@users_bp.route('/api/users/<user_email>', methods=['DELETE'])
 @admin_user_required
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/delete_user.yml')
@@ -22,7 +22,7 @@ def _delete_user(user_email):
 
 	return result, status_code
 
-@users_bp.route('/api/modify_user/<user_email>', methods=['PUT'])
+@users_bp.route('/api/users/<user_email>', methods=['PUT'])
 @admin_user_required
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/modify_user.yml')

@@ -11,7 +11,7 @@ def test_cant_delete_user_request_doesnt_come_from_admin_user(client):
 
 		hed = {'authorization': 'FAKETOKEN'}
 
-		response = client.delete('/api/delete_user/' + user_email, headers=hed, follow_redirects=False)
+		response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
 		value_expected = {'Error' : 'Request doesnt come from admin user'}
 
@@ -31,7 +31,7 @@ def test_delete_user_successfully(client):
 
 			mock_delete_user.return_value = {'Delete':'successfully deleted user with email {0}'.format(user_email)}, 200
 
-			response = client.delete('/api/delete_user/' + user_email, headers=hed, follow_redirects=False)
+			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
 			value_expected = {'Delete':'successfully deleted user with email {0}'.format(user_email)}
 
@@ -48,7 +48,7 @@ def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
 
 		hed = {'authorization': 'FAKETOKEN'}
 
-		response = client.put('/api/modify_user/' + user_email, headers=hed, follow_redirects=False)
+		response = client.put('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
 		value_expected = {'Error' : 'Request doesnt come from admin user'}
 
@@ -73,7 +73,7 @@ def test_modify_user_successfully(client):
 
 			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
 
-			response = client.put('/api/modify_user/' + user_email, json=user_information, headers=hed, follow_redirects=False)
+			response = client.put('/api/users/' + user_email, json=user_information, headers=hed, follow_redirects=False)
 
 			value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
 
