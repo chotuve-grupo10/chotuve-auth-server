@@ -23,21 +23,15 @@ def _delete_user(user_email):
 	return result, status_code
 
 @users_bp.route('/api/modify_user/<user_email>', methods=['PUT'])
+@admin_user_required
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/modify_user.yml')
 def _modify_user(user_email):
 	logger.debug('Requested to modify user: ' + user_email)
 
-	token = request.headers.get('authorization', None)
-
-	if is_request_from_admin_user(token):
-		logger.debug('Token is from admin user')
-		data = request.json
-		with current_app.app_context():
-			result, status_code = modify_user_from_db(current_app.client, user_email, data)
-	else:
-		logger.error('Request doesnt come from admin user')
-		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
+	data = request.json
+	with current_app.app_context():
+		result, status_code = modify_user_from_db(current_app.client, user_email, data)
 
 	return result, status_code
 
