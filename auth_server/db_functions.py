@@ -20,9 +20,17 @@ create_table_command = """CREATE TABLE Users (
 						firebase_user VARCHAR(1) NOT NULL,
 						admin_user VARCHAR(1) NOT NULL);"""
 
+create_app_servers_table_command = """CREATE TABLE AppServers (
+						token VARCHAR(255) PRIMARY KEY ,
+						registered_at timestamp NOT NULL);"""
+
 logger = logging.getLogger('gunicorn.error')
 
 def initialize_db():
+	initialize_users_table()
+	initialize_app_servers_table()
+
+def initialize_users_table():
 	client = current_app.client
 	if not table_exists(client, "Users"):
 		cursor = client.cursor()
@@ -37,6 +45,22 @@ def initialize_db():
 			logger.error('Error {e} creating Users table. Could not be created'.format(e=e))
 	else:
 		logger.debug('Table Users already exists')
+
+def initialize_app_servers_table():
+	client = current_app.client
+	if not table_exists(client, "AppServers"):
+		cursor = client.cursor()
+		try:
+			cursor.execute(create_app_servers_table_command)
+			client.commit()
+			cursor.close()
+			logger.debug('Table AppServers was created successfully')
+		except Exception as e:
+			client.rollback()
+			cursor.close()
+			logger.error('Error {e} creating AppServers table. Could not be created'.format(e=e))
+	else:
+		logger.debug('Table AppServers already exists')
 
 
 def table_exists(client, table_name):
