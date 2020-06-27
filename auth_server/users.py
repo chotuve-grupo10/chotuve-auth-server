@@ -9,7 +9,7 @@ users_bp = Blueprint('users', __name__)
 logger = logging.getLogger('gunicorn.error')
 
 @users_bp.route('/api/delete_user/<user_email>', methods=['DELETE'])
-@cross_origin(allow_headers=['Content-Type','authorization'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/delete_user.yml')
 def _delete_user(user_email):
 	logger.debug('Requested to delete user: ' + user_email)
@@ -28,7 +28,7 @@ def _delete_user(user_email):
 	return result, status_code
 
 @users_bp.route('/api/modify_user/<user_email>', methods=['PUT'])
-@cross_origin(allow_headers=['Content-Type','authorization'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/modify_user.yml')
 def _modify_user(user_email):
 	logger.debug('Requested to modify user: ' + user_email)
@@ -47,7 +47,7 @@ def _modify_user(user_email):
 	return result, status_code
 
 @users_bp.route('/api/users/', methods=['GET'])
-@cross_origin(allow_headers=['Content-Type','authorization'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/users.yml')
 def _get_users():
 
