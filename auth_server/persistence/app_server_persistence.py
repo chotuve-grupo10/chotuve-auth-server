@@ -14,3 +14,11 @@ class AppServerPersistence():
     if app_server is None:
       raise AppServerNotFoundException
     return app_server
+
+  def delete(self, token):
+    app_server = self.db.session.query(AppServer).get(token)
+    if app_server is None:
+      raise AppServerNotFoundException
+    else:
+      self.db.session.delete(app_server)
+      self.db.session.commit()

@@ -1,4 +1,4 @@
-Este servicio permitirá registrar un app server
+Este servicio permitirá borrar un app server previamente registrado.
 ---
 components:
   securitySchemes:
@@ -9,18 +9,12 @@ components:
 security:
   - bearerAuth: []
 definitions:
-  RegisterAppServerSuccessfullyResponse:
+  DeleteAppServerSuccessfullyResponse:
     type: object
     properties:
-      App server token:
+      Delete app server:
         type: string
-        format: uuid
-  ErrorResponse:
-    type: object
-    properties:
-      Error:
-        type: string
-        example: Error message
+        example: deleted app server successfully
 tags:
   - name: admins
     description: Secured Admin-only calls
@@ -30,11 +24,16 @@ parameters:
     description: token
     type: string
     required: true
+  - in: path
+    name: app_server_token
+    description: App server token
+    type: string
+    required: true
 responses:
-  201:
-    description: Returns token for app server
+  200:
+    description: App server deleted
     schema:
-      $ref: '#/definitions/RegisterAppServerSuccessfullyResponse'
+      $ref: '#/definitions/DeleteAppServerSuccessfullyResponse'
   403:
     description: You are not an admin user o your token is invalid.
     schema:
