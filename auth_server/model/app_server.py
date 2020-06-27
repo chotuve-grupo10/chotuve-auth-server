@@ -15,3 +15,6 @@ class AppServer(Base):
 
   def __repr__(self):
     return """<token={0} registered_at={1} """.format(self.token, self.registered_at)
+
+  def get_token(self):
+    return self.token
