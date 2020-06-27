@@ -36,23 +36,17 @@ def _modify_user(user_email):
 	return result, status_code
 
 @users_bp.route('/api/users/', methods=['GET'])
+@admin_user_required
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/users.yml')
 def _get_users():
 
-	token = request.headers.get('authorization', None)
-
-	if is_request_from_admin_user(token):
-		logger.debug('Token is from admin user')
-		with current_app.app_context():
-			try:
-				result = get_all_users(current_app.client)
-				status_code = 200
-			except Exception as exc:
-				result = {'Error' : str(exc)}
-				status_code = 500
-	else:
-		logger.error('Request doesnt come from admin user')
-		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
+	with current_app.app_context():
+		try:
+			result = get_all_users(current_app.client)
+			status_code = 200
+		except Exception as exc:
+			result = {'Error' : str(exc)}
+			status_code = 500
 
 	return result, status_code

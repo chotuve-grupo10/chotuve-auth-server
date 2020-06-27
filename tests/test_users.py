@@ -82,7 +82,7 @@ def test_modify_user_successfully(client):
 			assert json.loads(response.data) == value_expected
 
 def test_cant_get_users_request_doesnt_come_from_admin_user(client):
-	with patch('auth_server.users.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
@@ -92,13 +92,13 @@ def test_cant_get_users_request_doesnt_come_from_admin_user(client):
 
 		response = client.get('/api/users/', headers=hed, follow_redirects=False)
 
-		value_expected = {'Error':'This request doesnt come from an admin user'}
+		value_expected = {'Error' : 'Request doesnt come from admin user'}
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
 
 def test_cant_get_users_problem_with_db(client):
-	with patch('auth_server.users.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
@@ -116,7 +116,7 @@ def test_cant_get_users_problem_with_db(client):
 			assert json.loads(response.data) == value_expected
 
 def test_get_users_successfully(client):
-	with patch('auth_server.users.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
