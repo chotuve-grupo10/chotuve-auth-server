@@ -18,6 +18,7 @@ from auth_server.persistence.user_persistence import UserPersistence
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.model.user import User
+from auth_server.decorators.admin_user_required_decorator import admin_user_required
 
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
@@ -82,20 +83,14 @@ def _register_user_using_firebase():
 		return result, status_code
 
 @authentication_bp.route('/api/register_admin_user/', methods=['POST'])
+@admin_user_required
 @cross_origin(allow_headers=['Content-Type'])
 @swag_from('docs/register_admin_user.yml')
 def _register_admin_user():
 
-	id_token = request.headers.get('authorization', None)
-
-	if is_request_from_admin_user(id_token):
-		logger.debug('Token is from admin user')
-		data = request.json
-		with current_app.app_context():
-			result, status_code = insert_admin_user_into_users_db(current_app.client, data)
-	else:
-		logger.error('Request doesnt come from admin user')
-		result, status_code = {'Error':'This request doesnt come from an admin user'}, 401
+	data = request.json
+	with current_app.app_context():
+		result, status_code = insert_admin_user_into_users_db(current_app.client, data)
 
 	return result, status_code
 

@@ -11,7 +11,7 @@ def test_register_user_succesfully(client):
     user_information = {'email': 'this_email_should_not_be_saved@test.com',
         'password': 'fake password',
         'full name': 'full name',
-        'phone number': 'phone number', 
+        'phone number': 'phone number',
         'profile picture': 'profile picture',
     }
 
@@ -30,7 +30,7 @@ def test_register_user_succesfully_e2e(client_with_db):
     user_information = {'email': 'this_email_should_not_be_saved@test.com',
         'password': 'fake password',
         'full name': 'full name',
-        'phone number': 'phone number', 
+        'phone number': 'phone number',
         'profile picture': 'profile picture',
     }
 
@@ -38,7 +38,7 @@ def test_register_user_succesfully_e2e(client_with_db):
                  follow_redirects=False)
     value_expected = {'Registration' :
       'Successfully registered new user with email {0}'.format(user_information['email'])}
-    assert json.loads(response.data) == value_expected  
+    assert json.loads(response.data) == value_expected
     assert response.status_code == 201
 
 def raise_already_registered_exception(cls, *args, **kwargs):
@@ -104,7 +104,7 @@ def test_login_user_not_found(client):
     assert json.loads(response.data) == value_expected
 
 def test_register_admin_user_fails_request_doesnt_come_from_admin_user(client):
-  with patch('auth_server.authentication.is_request_from_admin_user') as mock_is_request_from_admin_user:
+  with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock_is_request_from_admin_user:
 
     mock_is_request_from_admin_user.return_value = False
 
@@ -118,13 +118,13 @@ def test_register_admin_user_fails_request_doesnt_come_from_admin_user(client):
     response = client.post('/api/register_admin_user/', json=user_information, headers=hed,
                      follow_redirects=False)
 
-    value_expected = {'Error':'This request doesnt come from an admin user'}
+    value_expected = {'Error' : 'Request doesnt come from admin user'}
 
     assert mock_is_request_from_admin_user.called
     assert json.loads(response.data) == value_expected
 
 def test_register_admin_user_successfully(client):
-  with patch('auth_server.authentication.is_request_from_admin_user') as mock_is_request_from_admin_user:
+  with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock_is_request_from_admin_user:
 
     mock_is_request_from_admin_user.return_value = True
 
@@ -156,9 +156,9 @@ def test_succesful_login_with_firebase_user_already_registered(client):
     with patch('firebase_admin.auth.verify_id_token') as firebase_mock:
       firebase_mock.return_value = {'email': 'aa@gmail.com'}
       user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', True, False)
-      response = client.post('/api/login_with_firebase/', json={}, 
+      response = client.post('/api/login_with_firebase/', json={},
                     headers={'authorization': 'FAKETOKEN'}, follow_redirects=False)
-      
+
       assert json.loads(response.data).get('Token')
 
 def test_login_with_firebase_user_registered_as_password_user(client):
@@ -166,9 +166,9 @@ def test_login_with_firebase_user_registered_as_password_user(client):
     with patch('firebase_admin.auth.verify_id_token') as firebase_mock:
       firebase_mock.return_value = {'email': 'aa@gmail.com'}
       user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', False, False)
-      response = client.post('/api/login_with_firebase/', json={}, 
+      response = client.post('/api/login_with_firebase/', json={},
                     headers={'authorization': 'FAKETOKEN'}, follow_redirects=False)
-      
+
       assert json.loads(response.data) == {'Login': 'user not registered with Firebase'}
 
 def raise_not_found_exception(cls, *args, **kwargs):
@@ -180,8 +180,8 @@ def test_succesful_login_with_firebase_user_not_registered(client):
       with patch('firebase_admin.auth.verify_id_token') as firebase_mock:
         firebase_mock.return_value = {'email': 'aa@gmail.com'}
 
-        response = client.post('/api/login_with_firebase/', json={}, 
+        response = client.post('/api/login_with_firebase/', json={},
                       headers={'authorization': 'FAKETOKEN'}, follow_redirects=False)
 
-        assert save_user.called        
+        assert save_user.called
         assert json.loads(response.data).get('Token')
