@@ -55,6 +55,7 @@ def _register_user():
 
 
 @authentication_bp.route('/api/register_with_firebase/', methods=['POST'])
+@app_server_token_required
 @swag_from('docs/register_with_firebase.yml')
 def _register_user_using_firebase():
 	try:
