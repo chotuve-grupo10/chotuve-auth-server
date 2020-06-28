@@ -11,7 +11,7 @@ logger = logging.getLogger('gunicorn.error')
 
 @users_bp.route('/api/users/<user_email>', methods=['DELETE'])
 @admin_user_required
-@cross_origin(allow_headers=['Content-Type'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/delete_user.yml')
 def _delete_user(user_email):
 	logger.debug('Requested to delete user: ' + user_email)
@@ -24,7 +24,7 @@ def _delete_user(user_email):
 
 @users_bp.route('/api/users/<user_email>', methods=['PUT'])
 @admin_user_required
-@cross_origin(allow_headers=['Content-Type'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/modify_user.yml')
 def _modify_user(user_email):
 	logger.debug('Requested to modify user: ' + user_email)
@@ -37,7 +37,7 @@ def _modify_user(user_email):
 
 @users_bp.route('/api/users/', methods=['GET'])
 @admin_user_required
-@cross_origin(allow_headers=['Content-Type'])
+@cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/users.yml')
 def _get_users():
 
