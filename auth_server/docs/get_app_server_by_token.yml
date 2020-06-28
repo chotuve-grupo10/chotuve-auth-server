@@ -1,0 +1,50 @@
+Este servicio permitirá listar los app servers registrados.
+---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+definitions:
+  GetAppServerSuccessfulResponse:
+    type: object
+    properties:
+      App server:
+        type: object
+        properties:
+          token:
+            type: string
+            format: uuid
+          registered_at:
+            type: string
+            format: date-time
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+parameters:
+  - in: header
+    name: authorization
+    description: token
+    type: string
+    required: true
+  - in: path
+    name: app_server_token
+    description: App server token
+    type: string
+    required: true
+responses:
+  200:
+    description: App server
+    schema:
+      $ref: '#/definitions/GetAppServerSuccessfulResponse'
+  403:
+    description: You are not an admin user o your token is invalid.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  500:
+    description: There is a problem with the auth server
+    schema:
+      $ref: '#/definitions/ErrorResponse'

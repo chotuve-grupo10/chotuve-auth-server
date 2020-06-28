@@ -40,3 +40,37 @@ def _delete_app_server(app_server_token):
 	except Exception as e:
 		logger.error("Error:" + str(e))
 		return {'Error' : 'Couldnt delete app server'}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+@app_servers_bp.route('/api/app_servers/<app_server_token>', methods=['GET'])
+@admin_user_required
+@cross_origin(allow_headers=['Content-Type'])
+@swag_from('docs/get_app_server_by_token.yml')
+def _get_app_server(app_server_token=None):
+
+	try:
+		app_servers_persistence = AppServerPersistence(current_app.db)
+
+		app_server = app_servers_persistence.get_app_server_by_token(app_server_token)
+		logger.debug("Successfully obtained app server with token:" + app_server_token)
+		return {'App server' : app_server.serialize()}, HTTPStatus.OK
+	except Exception as e:
+		logger.error("Error:" + str(e))
+		return {'Error' : 'Couldnt get app server'}, HTTPStatus.INTERNAL_SERVER_ERROR
+
+@app_servers_bp.route('/api/app_servers/', methods=['GET'])
+@admin_user_required
+@cross_origin(allow_headers=['Content-Type'])
+@swag_from('docs/get_app_servers.yml')
+def _get_app_servers():
+
+	try:
+		app_servers_persistence = AppServerPersistence(current_app.db)
+
+		app_servers = app_servers_persistence.get_all_app_servers()
+		app_servers_serialized = [item.serialize() for item in app_servers]
+		logger.debug("Successfully obtained all apps servers")
+		return {'App servers' : app_servers_serialized}, HTTPStatus.OK
+
+	except Exception as e:
+		logger.error("Error:" + str(e))
+		return {'Error' : 'Couldnt get app servers'}, HTTPStatus.INTERNAL_SERVER_ERROR
