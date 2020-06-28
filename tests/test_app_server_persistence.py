@@ -45,3 +45,10 @@ def test_delete_app_server_successfully(postgresql_db):
 
     sut.delete(app_server_to_save.get_token())
     assert query_first_app_server(session) is None
+
+def test_cant_delete_app_server_with_given_token_not_found(postgresql_db):
+    session = postgresql_db.session
+    create_appservers_table(session)
+    sut = AppServerPersistence(postgresql_db)
+    with pytest.raises(AppServerNotFoundException):
+        user = sut.delete('5a3d6026-2f5c-4957-b52d-c094b50774db')
