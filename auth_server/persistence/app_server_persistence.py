@@ -15,6 +15,9 @@ class AppServerPersistence():
       raise AppServerNotFoundException
     return app_server
 
+  def get_all_app_servers(self):
+    return self.db.session.query(AppServer).all()
+
   def delete(self, token):
     app_server = self.db.session.query(AppServer).get(token)
     if app_server is None:
