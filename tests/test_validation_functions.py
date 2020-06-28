@@ -52,15 +52,3 @@ def test_isnt_valid_request_from_admin_user_cant_get_user_from_token():
 
         assert mock_validate_token.called
         assert not response
-
-def test_token_from_app_server_is_not_valid(postgresql_db):
-
-    with postgresql_db.app_context():
-
-        with patch.object(AppServerPersistence,'get_app_server_by_token') as mock_app_server_persistence:
-
-            app_server = AppServer()
-            mock_app_server_persistence.return_value = app_server
-
-            assert auth_server.validation_functions.is_valid_token_from_app_server(app_server.get_token())
-
