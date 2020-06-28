@@ -5,60 +5,107 @@ from auth_server.model.user import User
 # from auth_server.db_functions import insert_into_users_db
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
+from auth_server.decorators.app_server_token_required_decorator import APP_SERVER_TOKEN_HEADER
+
+def test_register_fails_invalid_app_server_token(client):
+
+  with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+
+    mock_is_valid_token_from_app_server.return_value = False
+
+    user_information = {'email': 'this_email_should_not_be_saved@test.com',
+        'password': 'fake password',
+        'full name': 'full name',
+        'phone number': 'phone number',
+        'profile picture': 'profile picture',
+    }
+
+    hed = {APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}
+
+    response = client.post('/api/register/', json=user_information, headers=hed,
+                follow_redirects=False)
+
+    value_expected =  {'Error' : 'App server token NOT valid'}
+
+    assert mock_is_valid_token_from_app_server.called
+    assert json.loads(response.data) == value_expected
 
 def test_register_user_succesfully(client):
-  with patch.object(UserPersistence,'save') as mock:
-    user_information = {'email': 'this_email_should_not_be_saved@test.com',
-        'password': 'fake password',
-        'full name': 'full name',
-        'phone number': 'phone number',
-        'profile picture': 'profile picture',
-    }
 
-    result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+  with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
 
-    response = client.post('/api/register/', json=user_information,
-                 follow_redirects=False)
-    value_expected = {'Registration' :
-      'Successfully registered new user with email {0}'.format(user_information['email'])}
+    mock_is_valid_token_from_app_server.return_value = True
 
-    assert mock.called
-    assert json.loads(response.data) == value_expected
-    assert response.status_code == 201
+    with patch.object(UserPersistence,'save') as mock:
+      user_information = {'email': 'this_email_should_not_be_saved@test.com',
+          'password': 'fake password',
+          'full name': 'full name',
+          'phone number': 'phone number',
+          'profile picture': 'profile picture',
+      }
+
+      result = {'Registration': 'Successfully registered new user with email {0}'.format(user_information['email'])}
+
+      hed = {APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}
+
+      response = client.post('/api/register/', json=user_information, headers=hed,
+                  follow_redirects=False)
+      value_expected = {'Registration' :
+        'Successfully registered new user with email {0}'.format(user_information['email'])}
+
+      assert mock.called
+      assert mock_is_valid_token_from_app_server.called
+      assert json.loads(response.data) == value_expected
+      assert response.status_code == 201
 
 def test_register_user_succesfully_e2e(client_with_db):
-    user_information = {'email': 'this_email_should_not_be_saved@test.com',
-        'password': 'fake password',
-        'full name': 'full name',
-        'phone number': 'phone number',
-        'profile picture': 'profile picture',
-    }
 
-    response = client_with_db.post('/api/register/', json=user_information,
-                 follow_redirects=False)
-    value_expected = {'Registration' :
-      'Successfully registered new user with email {0}'.format(user_information['email'])}
-    assert json.loads(response.data) == value_expected
-    assert response.status_code == 201
+    with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+
+      mock_is_valid_token_from_app_server.return_value = True
+
+      user_information = {'email': 'this_email_should_not_be_saved@test.com',
+          'password': 'fake password',
+          'full name': 'full name',
+          'phone number': 'phone number',
+          'profile picture': 'profile picture',
+      }
+
+      hed = {APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}
+
+      response = client_with_db.post('/api/register/', json=user_information, headers=hed,
+                  follow_redirects=False)
+      value_expected = {'Registration' :
+        'Successfully registered new user with email {0}'.format(user_information['email'])}
+      assert json.loads(response.data) == value_expected
+      assert response.status_code == 201
 
 def raise_already_registered_exception(cls, *args, **kwargs):
   raise UserAlreadyRegisteredException
 
 def test_register_user_already_registered(client):
-  with patch.object(UserPersistence,'save', new=raise_already_registered_exception) as mock:
-    user_information = {'email': 'diegote@gmail.com',
-        'password': 'fake password',
-        'full name': 'full name',
-        'phone number': 'phone number', 'profile picture': 'profile picture',
-        'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
 
-    response = client.post('/api/register/', json=user_information,
-                 follow_redirects=False)
-    value_expected = {'Registration' :
-      'This user already exists!'}
 
-    assert json.loads(response.data) == value_expected
-    assert response.status_code == 409
+  with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+
+    mock_is_valid_token_from_app_server.return_value = True
+
+    with patch.object(UserPersistence,'save', new=raise_already_registered_exception) as mock:
+      user_information = {'email': 'diegote@gmail.com',
+          'password': 'fake password',
+          'full name': 'full name',
+          'phone number': 'phone number', 'profile picture': 'profile picture',
+          'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
+
+      hed = {APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}
+
+      response = client.post('/api/register/', json=user_information, headers=hed,
+                  follow_redirects=False)
+      value_expected = {'Registration' :
+        'This user already exists!'}
+
+      assert json.loads(response.data) == value_expected
+      assert response.status_code == 409
 
 def test_login_user_succesful(client):
   with patch('auth_server.authentication.get_user') as mock_get_user:

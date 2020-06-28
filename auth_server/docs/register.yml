@@ -14,7 +14,13 @@ definitions:
         type: string
       profile picture:
         type: string
+tags:
+  - name: All users
 parameters:
+  - in: header
+    name: AppServerToken
+    type: string
+    required: true
   - in: body
     name: user
     description: The user to create.

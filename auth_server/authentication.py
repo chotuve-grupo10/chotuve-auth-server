@@ -19,6 +19,7 @@ from auth_server.exceptions.user_already_registered_exception import UserAlready
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.model.user import User
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
+from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
 
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
@@ -36,6 +37,7 @@ firebase_app = firebase_admin.initialize_app(cred)
 ### Register methods ###
 
 @authentication_bp.route('/api/register/', methods=['POST'])
+@app_server_token_required
 @swag_from('docs/register.yml')
 def _register_user():
 	try:
