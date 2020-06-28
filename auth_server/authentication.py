@@ -168,6 +168,7 @@ def _login_user():
 	# return {'Login': 'was successful'}
 
 @authentication_bp.route('/api/login_with_firebase/', methods=['POST'])
+@app_server_token_required
 @swag_from('docs/login_with_firebase.yml')
 def _login_user_using_firebase():
 	try:
