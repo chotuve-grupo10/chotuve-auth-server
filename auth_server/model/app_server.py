@@ -18,3 +18,9 @@ class AppServer(Base):
 
   def get_token(self):
     return self.token
+
+  def serialize(self):
+    return {
+      'token' : self.token,
+      'registered_at' : self.registered_at
+    }
