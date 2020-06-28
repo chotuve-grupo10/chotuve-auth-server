@@ -86,4 +86,4 @@ def test_get_all_app_servers_successfully(postgresql_db):
     assert row is not None
 
     app_servers_received = sut.get_all_app_servers()
-    assert app_servers_received.len() == 2
+    assert len(app_servers_received) == 2
