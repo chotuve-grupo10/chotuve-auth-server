@@ -193,7 +193,7 @@ def _login_user_using_firebase():
 			logger.debug('Usuario logueado con exito')
 			token = generate_auth_token(claims.get('email'))
 			logger.debug('This is the token {0}'.format(token))
-			result = {'Token': token}
+			result = {'Token': token, 'claims': claims}
 			status_code = HTTPStatus.OK
 		else:
 			logger.debug('User not registered with Firebase')
