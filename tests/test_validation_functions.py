@@ -1,6 +1,8 @@
 import auth_server.validation_functions
 import auth_server.token_functions
 from unittest.mock import patch
+from auth_server.persistence.app_server_persistence import AppServerPersistence
+from auth_server.model.app_server import AppServer
 
 def test_valid_firebase_user():
 

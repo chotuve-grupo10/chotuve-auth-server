@@ -1,4 +1,4 @@
-Este servicio permitirá registrar un app server
+Este servicio permitirá listar los app servers registrados.
 ---
 components:
   securitySchemes:
@@ -9,18 +9,18 @@ components:
 security:
   - bearerAuth: []
 definitions:
-  RegisterAppServerSuccessfullyResponse:
+  GetAppServersSuccessfulResponse:
     type: object
     properties:
-      App server token:
-        type: string
-        format: uuid
-  ErrorResponse:
-    type: object
-    properties:
-      Error:
-        type: string
-        example: Error message
+      App servers:
+        type: object
+        properties:
+          token:
+            type: string
+            format: uuid
+          registered_at:
+            type: string
+            format: date-time
 tags:
   - name: admins
     description: Secured Admin-only calls
@@ -31,10 +31,10 @@ parameters:
     type: string
     required: true
 responses:
-  201:
-    description: Returns token for app server
+  200:
+    description: array of App servers
     schema:
-      $ref: '#/definitions/RegisterAppServerSuccessfullyResponse'
+      $ref: '#/definitions/GetAppServersSuccessfulResponse'
   403:
     description: You are not an admin user o your token is invalid.
     schema:

@@ -1,4 +1,4 @@
-Recibe una solicitud de login utilizando Firebase. Si el usuario no está registrado, 
+Recibe una solicitud de login utilizando Firebase. Si el usuario no está registrado,
 se lo registra automáticamente
 ---
 components:
@@ -9,7 +9,13 @@ components:
       bearerFormat: JWT
 security:
   - bearerAuth: []
+tags:
+  - name: All users
 parameters:
+  - in: header
+    name: AppServerToken
+    type: string
+    required: true
   - in: header
     name: authorization
     description: id token
