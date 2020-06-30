@@ -141,7 +141,9 @@ def _login_user():
 		if status_code == 200:
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
-				token = generate_auth_token(data['email'])
+				user_persistence = UserPersistence(current_app.db)
+				user_found = user_persistence.get_user_by_email(data['email'])
+				token = generate_auth_token(user_found)
 				logger.debug('This is the token {0}'.format(token))
 				result = {'Token': token}
 			else:
@@ -191,7 +193,7 @@ def _login_user_using_firebase():
 
 		if user.is_firebase_user():
 			logger.debug('Usuario logueado con exito')
-			token = generate_auth_token(claims.get('email'))
+			token = generate_auth_token(user)
 			logger.debug('This is the token {0}'.format(token))
 			result = {'Token': token, 'claims': claims}
 			status_code = HTTPStatus.OK

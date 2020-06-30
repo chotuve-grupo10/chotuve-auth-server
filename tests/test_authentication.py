@@ -116,22 +116,27 @@ def test_login_user_succesful(client):
 
 		with patch('auth_server.authentication.validar_usuario') as mock_validar:
 
-			with patch('auth_server.authentication.generate_auth_token') as mock_token_generation:
-				mock_token_generation.return_value = 'THISISAFAKETOKEN'
-				user_information = {'email': 'diegote@gmail.com',
-									'password': 'fake_falopa'}
+			with patch.object(UserPersistence,'get_user_by_email') as user_persistence_mock:
+
+				user_persistence_mock.return_value = User(user, 'fake_falopa', 'John Doe', '1111', 'NULL', True, False)
+
+				with patch('auth_server.authentication.generate_auth_token') as mock_token_generation:
+					mock_token_generation.return_value = 'THISISAFAKETOKEN'
+					user_information = {'email': 'diegote@gmail.com',
+										'password': 'fake_falopa'}
 
 
-				response = client.post('/api/login/', json=user_information,
-										 follow_redirects=False)
-				value_expected = {'Token':
-									'THISISAFAKETOKEN'}
+					response = client.post('/api/login/', json=user_information,
+											follow_redirects=False)
+					value_expected = {'Token':
+										'THISISAFAKETOKEN'}
 
-			mock_validar.return_value = True
-			assert mock_get_user.called
-			assert mock_validar.called
-			assert mock_token_generation.called
-			assert json.loads(response.data) == value_expected
+				mock_validar.return_value = True
+				assert mock_get_user.called
+				assert mock_validar.called
+				assert user_persistence_mock.called
+				assert mock_token_generation.called
+				assert json.loads(response.data) == value_expected
 
 def test_login_user_not_found(client):
 	with patch('auth_server.authentication.get_user') as mock_get_user:
