@@ -142,7 +142,6 @@ def _login_user():
 			if validar_usuario(user, data['password']):
 				logger.debug('Usuario logueado con exito')
 				user_persistence = UserPersistence(current_app.db)
-				user_found = None
 				user_found = user_persistence.get_user_by_email(data['email'])
 				token = generate_auth_token(user_found)
 				logger.debug('This is the token {0}'.format(token))
