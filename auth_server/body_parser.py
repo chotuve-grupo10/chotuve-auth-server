@@ -6,4 +6,4 @@ def parse_regular_user(body):
 	phone_number = body['phone number']
 	profile_picture = body['profile picture']
 	password = body['password']
-	return User(email, password, full_name, phone_number, profile_picture, False, False)
+	return User(email, password, full_name, phone_number, profile_picture, False, False, False)

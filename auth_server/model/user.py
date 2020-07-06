@@ -16,7 +16,7 @@ class User(Base):
   admin_user = Column(String)
 
   def __init__(self, email, password, full_name, phone_number, profile_picture, \
-      is_firebase_user, is_admin_user):
+      is_firebase_user, is_admin_user, is_blocked_user):
     sal = random_string(6)
     pimienta = random_string(1)
     self.email = email
@@ -27,6 +27,7 @@ class User(Base):
     self.salt = sal if password else 0
     self.firebase_user = '1' if is_firebase_user else '0'
     self.admin_user = '1' if is_admin_user else '0'
+    self.blocked_user = '1' if is_blocked_user else '0'
 
   def is_firebase_user(self):
     return self.firebase_user == '1'
@@ -34,7 +35,10 @@ class User(Base):
   def is_admin_user(self):
     return self.admin_user == '1'
 
+  def is_blocked_user(self):
+    return self.blocked_user == '1'
+
   def __repr__(self):
     return """<User email={0} full_name={1} phone_number={2} profile_picture={3}
-        firebase={4} admin={5}""".format(self.email, self.full_name, self.phone_number,
-        self.profile_picture, str(self.is_firebase_user()), self.admin_user)
+        firebase={4} admin={5} blocked={6}""".format(self.email, self.full_name, self.phone_number,
+        self.profile_picture, str(self.is_firebase_user()), self.admin_user, self.blocked_user)
