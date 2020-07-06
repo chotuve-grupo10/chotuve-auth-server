@@ -88,7 +88,7 @@ def insert_admin_user_into_users_db(client, user_information):
 	try:
 		cursor.execute(
 			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
-				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}','{blocked_user}');"""
 					.format(email=user_information['email'],
 					full_name=user_information['full name'],
 					phone_number=user_information['phone number'],
@@ -123,7 +123,7 @@ def insert_firebase_user_into_users_db(client, claims):
 	try:
 		cursor.execute(
 			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
-				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}','{blocked_user}');"""
 					.format(email=claims.get('email'),
 					full_name=claims.get('name'),
 					phone_number='NULL',
