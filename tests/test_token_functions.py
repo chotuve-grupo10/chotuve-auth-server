@@ -3,7 +3,7 @@ import auth_server.token_functions
 from auth_server.model.user import User
 
 def test_valid_token():
-	user = User('test@test.com', 'fake_falopa', 'John Doe', '1111', 'NULL', True, False)
+	user = User('test@test.com', 'fake_falopa', 'John Doe', '1111', 'NULL', True, False, False)
 
 	generated_token = auth_server.token_functions.generate_auth_token(user)
 	result, status_code = auth_server.token_functions.validate_token(generated_token)
@@ -20,7 +20,7 @@ def test_invalid_token():
 	assert result == {'Message': 'invalid token'}
 
 def test_returns_user_with_token_successfully():
-	user = User('test@test.com', 'fake_falopa', 'John Doe', '1111', 'NULL', True, False)
+	user = User('test@test.com', 'fake_falopa', 'John Doe', '1111', 'NULL', True, False, False)
 
 	generated_token = auth_server.token_functions.generate_auth_token(user)
 	user_obtained = auth_server.token_functions.get_user_with_token(generated_token)

@@ -188,7 +188,7 @@ def _login_user_using_firebase():
 			user = user_persistence.get_user_by_email(claims.get('email'))
 		except UserNotFoundException:
 			user = User(claims.get('email'), None, claims.get('name'), 'NULL',
-							claims.get('picture'), True, False)
+							claims.get('picture'), True, False, False)
 			user_persistence.save(user)
 
 		if user.is_firebase_user():
