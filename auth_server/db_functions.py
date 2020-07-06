@@ -18,7 +18,8 @@ create_table_command = """CREATE TABLE Users (
 						hash VARCHAR(255) NOT NULL,
 						salt VARCHAR(255) NOT NULL,
 						firebase_user VARCHAR(1) NOT NULL,
-						admin_user VARCHAR(1) NOT NULL);"""
+						admin_user VARCHAR(1) NOT NULL,
+						blocked_user VARCHAR(1) NOT NULL);"""
 
 create_app_servers_table_command = """CREATE TABLE AppServers (
 						token VARCHAR(255) PRIMARY KEY ,
