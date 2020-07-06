@@ -13,3 +13,11 @@ def test_is_not_admin_user():
 def test_is_admin_user():
   user = User('aa@gmail.com', 'pa$$word', 'John Doe', '1111', 'NULL', False, True, False)
   assert user.is_admin_user()
+
+def test_is_not_blocked_user():
+  user = User('aa@gmail.com', 'pa$$word', 'John Doe', '1111', 'NULL', True, False, False)
+  assert not user.is_blocked_user()
+
+def test_is_blocked_user():
+  user = User('aa@gmail.com', 'pa$$word', 'John Doe', '1111', 'NULL', False, True, True)
+  assert user.is_blocked_user()
