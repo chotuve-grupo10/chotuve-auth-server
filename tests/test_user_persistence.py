@@ -49,12 +49,12 @@ def test_block_existent_user_successfully(postgresql_db):
   assert user.email == 'test@test.com'
   assert user.full_name == 'Test User'
   assert user.phone_number == '444-4444'
-  assert not user.is_blocked()
+  assert user.blocked_user == '0'
 
   sut.block_user('test@test.com')
   user = sut.get_user_by_email('test@test.com')
   assert user.email == 'test@test.com'
-  assert user.is_blocked()
+  assert user.blocked_user == '1'
 
 def test_retrieve_inexistent_user(postgresql_db):
   session = postgresql_db.session
