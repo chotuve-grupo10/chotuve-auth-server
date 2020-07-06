@@ -57,5 +57,5 @@ def query_first_user(conn):
 
 def insert_test_user(conn):
     conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
-						hash, salt, firebase_user, admin_user) VALUES ('test@test.com', 'Test User',
-            '444-4444', null, 'xxxxx', 'xxxxx', '0', '0')""")
+						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
+            '444-4444', null, 'xxxxx', 'xxxxx', '0', '0', '0')""")
