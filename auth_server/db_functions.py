@@ -87,7 +87,7 @@ def insert_admin_user_into_users_db(client, user_information):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
 				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
 					.format(email=user_information['email'],
 					full_name=user_information['full name'],
@@ -96,7 +96,8 @@ def insert_admin_user_into_users_db(client, user_information):
 					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
 					salt=sal,
 					firebase_user='0',
-					admin_user='1'))
+					admin_user='1',
+					blocked_user='0'))
 
 		client.commit()
 		logger.debug('Successfully registered new admin user with email {0}'.format(user_information['email']))
@@ -121,7 +122,7 @@ def insert_firebase_user_into_users_db(client, claims):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
 				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
 					.format(email=claims.get('email'),
 					full_name=claims.get('name'),
@@ -130,7 +131,8 @@ def insert_firebase_user_into_users_db(client, claims):
 					hash='0',
 					salt='0',
 					firebase_user='1',
-					admin_user='0'))
+					admin_user='0',
+					blocked_user='0'))
 
 		client.commit()
 		logger.debug('Successfully registered new user with email {0}'.format(claims.get('email')))
