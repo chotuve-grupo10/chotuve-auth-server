@@ -56,6 +56,18 @@ def test_block_existent_user_successfully(postgresql_db):
   assert user.email == 'test@test.com'
   assert user.blocked_user == '1'
 
+def test_cant_block_user_because_doesnt_exist(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  with pytest.raises(UserNotFoundException):
+    sut.block_user('test@test.com')
+
+
 def test_retrieve_inexistent_user(postgresql_db):
   session = postgresql_db.session
   create_all(session)
