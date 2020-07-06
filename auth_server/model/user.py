@@ -14,6 +14,7 @@ class User(Base):
   salt = Column(String)
   firebase_user = Column(String)
   admin_user = Column(String)
+  blocked_user = Column(String)
 
   def __init__(self, email, password, full_name, phone_number, profile_picture, \
       is_firebase_user, is_admin_user, is_blocked_user):
