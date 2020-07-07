@@ -52,3 +52,15 @@ def test_isnt_valid_request_from_admin_user_cant_get_user_from_token():
 
         assert mock_validate_token.called
         assert not response
+
+def test_is_blocked_user():
+
+    user = ['test@mail.com', 'test', 'phone', 'picture', 'hash', 'salt', '0', '1', '1']
+
+    assert auth_server.validation_functions.is_blocked_user(user)
+
+def test_is_not_blocked_user():
+
+    user = ['test@mail.com', 'test', 'phone', 'picture', 'hash', 'salt', '0', '1', '0']
+
+    assert not auth_server.validation_functions.is_blocked_user(user)
