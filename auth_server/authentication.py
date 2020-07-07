@@ -191,7 +191,11 @@ def _login_user_using_firebase():
 							claims.get('picture'), True, False, False)
 			user_persistence.save(user)
 
-		if user.is_firebase_user():
+		if user.is_blocked_user():
+			logger.debug('This user is BLOCKED')
+			result = {'Login': 'user not registered with Firebase'}
+			status_code = 401
+		elif user.is_firebase_user():
 			logger.debug('Usuario logueado con exito')
 			token = generate_auth_token(user)
 			logger.debug('This is the token {0}'.format(token))
