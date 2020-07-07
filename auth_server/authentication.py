@@ -147,8 +147,8 @@ def _login_user():
 				logger.debug('This is the token {0}'.format(token))
 				result = {'Token': token}
 			else:
-				logger.debug('La password es incorrecta')
-				result = {'Login': 'invalid password'}
+				logger.debug('Incorrect user or password')
+				result = {'Login': 'invalid user or password'}
 				status_code = 401
 	return result, status_code
 	# para cuando nos llegue la request desde Androide

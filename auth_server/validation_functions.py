@@ -13,6 +13,9 @@ BLOCKED_FLAG_POSITION = 8
 logger = logging.getLogger('gunicorn.error')
 
 def validar_usuario(user, password):
+	if is_blocked_user(user):
+		return False
+
 	hashed = user[4]
 	salt = user[5]
 	for i in range(256):
