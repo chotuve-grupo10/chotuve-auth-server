@@ -64,7 +64,6 @@ def test_cant_block_user_because_doesnt_exist(postgresql_db):
   sut = UserPersistence(postgresql_db)
   user = sut.get_user_by_email('test@test.com')
   assert user.email == 'test@test.com'
-  sut.block_user('test@test.com')
 
   with pytest.raises(UserNotFoundException):
     sut.block_user('testing@test.com')
@@ -76,6 +75,7 @@ def test_cant_block_user_because_user_is_already_blocked(postgresql_db):
   sut = UserPersistence(postgresql_db)
   user = sut.get_user_by_email('test@test.com')
   assert user.email == 'test@test.com'
+  sut.block_user('test@test.com')
 
   with pytest.raises(UserlAlreadyBlockedException):
     sut.block_user('test@test.com')
