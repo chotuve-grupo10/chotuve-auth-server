@@ -1,10 +1,14 @@
 import logging
+from http import HTTPStatus
 from flask import Blueprint, current_app, request
 from flask_cors import CORS, cross_origin
 from flasgger import swag_from
 from auth_server.validation_functions import *
 from auth_server.db_functions import *
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
+from auth_server.persistence.user_persistence import UserPersistence
+from auth_server.exceptions.user_not_found_exception import UserNotFoundException
+from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
 
 users_bp = Blueprint('users', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -16,9 +20,14 @@ logger = logging.getLogger('gunicorn.error')
 def _delete_user(user_email):
 	logger.debug('Requested to delete user: ' + user_email)
 
-	data = request.json
-	with current_app.app_context():
-		result, status_code = delete_user_from_db(current_app.client, user_email)
+	try:
+		user_persistence = UserPersistence(current_app.db)
+		user_persistence.block_user(user_email)
+		result, status_code = {'Delete' : 'successfully deleted user with email {0}'.format(user_email)}, HTTPStatus.OK
+	except UserNotFoundException:
+		result, status_code = {'Delete' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND
+	except UserlAlreadyBlockedException:
+		result, status_code = {'Delete' : 'User {0} was already deleted'.format(user_email)}, HTTPStatus.NOT_FOUND
 
 	return result, status_code
 
