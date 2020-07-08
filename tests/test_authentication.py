@@ -95,7 +95,7 @@ def test_register_user_already_registered(client):
 					'password': 'fake password',
 					'full name': 'full name',
 					'phone number': 'phone number', 'profile picture': 'profile picture',
-					'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0'}
+					'hash': 'hash', 'salt': 'salt', 'firebase_user':'0', 'admin_user':'0', 'blocked_user':'0'}
 
 			hed = {APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}
 
@@ -118,7 +118,7 @@ def test_login_user_succesful(client):
 
 			with patch.object(UserPersistence,'get_user_by_email') as user_persistence_mock:
 
-				user_persistence_mock.return_value = User(user, 'fake_falopa', 'John Doe', '1111', 'NULL', True, False)
+				user_persistence_mock.return_value = User(user, 'fake_falopa', 'John Doe', '1111', 'NULL', True, False, False)
 
 				with patch('auth_server.authentication.generate_auth_token') as mock_token_generation:
 					mock_token_generation.return_value = 'THISISAFAKETOKEN'
@@ -210,7 +210,7 @@ def test_succesful_login_with_firebase_user_already_registered(client):
 		with patch.object(UserPersistence,'get_user_by_email') as user_persistence_mock:
 			with patch('firebase_admin.auth.verify_id_token') as firebase_mock:
 				firebase_mock.return_value = {'email': 'aa@gmail.com'}
-				user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', True, False)
+				user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', True, False, False)
 				response = client.post('/api/login_with_firebase/', json={},
 											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
@@ -222,7 +222,7 @@ def test_login_with_firebase_user_registered_as_password_user(client):
 		with patch.object(UserPersistence,'get_user_by_email') as user_persistence_mock:
 			with patch('firebase_admin.auth.verify_id_token') as firebase_mock:
 				firebase_mock.return_value = {'email': 'aa@gmail.com'}
-				user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', False, False)
+				user_persistence_mock.return_value = User('aa@gmail.com', '', 'Tito', '', '', False, False, False)
 				response = client.post('/api/login_with_firebase/', json={},
 											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 

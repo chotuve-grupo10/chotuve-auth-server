@@ -18,7 +18,8 @@ create_table_command = """CREATE TABLE Users (
 						hash VARCHAR(255) NOT NULL,
 						salt VARCHAR(255) NOT NULL,
 						firebase_user VARCHAR(1) NOT NULL,
-						admin_user VARCHAR(1) NOT NULL);"""
+						admin_user VARCHAR(1) NOT NULL,
+						blocked_user VARCHAR(1) NOT NULL);"""
 
 create_app_servers_table_command = """CREATE TABLE AppServers (
 						token VARCHAR(255) PRIMARY KEY ,
@@ -86,8 +87,8 @@ def insert_admin_user_into_users_db(client, user_information):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
-				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}','{blocked_user}');"""
 					.format(email=user_information['email'],
 					full_name=user_information['full name'],
 					phone_number=user_information['phone number'],
@@ -95,7 +96,8 @@ def insert_admin_user_into_users_db(client, user_information):
 					hash=hashlib.sha512((user_information['password']+sal+pimienta).encode('utf-8')).hexdigest(),
 					salt=sal,
 					firebase_user='0',
-					admin_user='1'))
+					admin_user='1',
+					blocked_user='0'))
 
 		client.commit()
 		logger.debug('Successfully registered new admin user with email {0}'.format(user_information['email']))
@@ -120,8 +122,8 @@ def insert_firebase_user_into_users_db(client, claims):
 	cursor = client.cursor()
 	try:
 		cursor.execute(
-			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user)
-				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}');"""
+			"""INSERT INTO Users(email,full_name,phone_number,profile_picture,hash,salt,firebase_user,admin_user,blocked_user)
+				VALUES('{email}','{full_name}','{phone_number}','{profile_picture}','{hash}','{salt}','{firebase_user}','{admin_user}','{blocked_user}');"""
 					.format(email=claims.get('email'),
 					full_name=claims.get('name'),
 					phone_number='NULL',
@@ -129,7 +131,8 @@ def insert_firebase_user_into_users_db(client, claims):
 					hash='0',
 					salt='0',
 					firebase_user='1',
-					admin_user='0'))
+					admin_user='0',
+					blocked_user='0'))
 
 		client.commit()
 		logger.debug('Successfully registered new user with email {0}'.format(claims.get('email')))
@@ -188,25 +191,6 @@ def get_all_users(client):
 		cursor.close()
 		logger.error('Error {e}. Could not get users'.format(e=e))
 		raise Exception(str(e))
-
-def delete_user_from_db(client, mail):
-
-	cursor = client.cursor()
-	logger.debug('Deleting user: {user}'.format(user=mail))
-	try:
-		cursor.execute("DELETE FROM users WHERE email = '{mail}'".format(mail=mail))
-		client.commit()
-		logger.debug('User deleted')
-		result = {'Delete':'successfully deleted user with email {0}'.format(mail)}
-		status_code = 200
-	except Exception as e:
-		client.rollback()
-		logger.error('Error {e}. Could not delete user'.format(e=e))
-		result = {'Delete': 'Error {e}'.format(e=e)}
-		status_code = 500
-
-	cursor.close()
-	return result, status_code
 
 def modify_user_from_db(client, mail, user_information):
 
