@@ -1,7 +1,7 @@
 import os
 import logging
-import requests
 from http import HTTPStatus
+import requests
 from flask import Blueprint, current_app, request
 from flask_cors import CORS, cross_origin
 from flasgger import swag_from
