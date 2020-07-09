@@ -1,3 +1,4 @@
+import requests
 import pytest
 from unittest.mock import patch
 import simplejson as json
@@ -74,15 +75,19 @@ def test_delete_user_successfully(client):
 
 		with patch.object(UserPersistence,'block_user') as user_persistence:
 
-			hed = {'authorization': 'TOKEN'}
+			with patch.object(requests,'delete') as delete_mock:
 
-			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+				delete_mock.return_value.status_code = 200
 
-			value_expected = {'Delete':'successfully deleted user with email {0}'.format(user_email)}
+				hed = {'authorization': 'TOKEN'}
 
-			assert mock.called
-			assert user_persistence.called
-			assert json.loads(response.data) == value_expected
+				response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+				value_expected = {'Delete':'successfully deleted user with email {0}'.format(user_email)}
+
+				assert mock.called
+				assert user_persistence.called
+				assert json.loads(response.data) == value_expected
 
 def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
 	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
