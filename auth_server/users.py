@@ -36,7 +36,7 @@ def _delete_user(user_email):
 			result, status_code = {'Delete' : 'successfully deleted user with email {0}'.format(user_email)}, HTTPStatus.OK
 			logger.debug('User deleted')
 		else:
-			result, status_code = {'Error' : 'successfully deleted user with email {0}, but couldnt delete user in app server'.format(user_email)}, HTTPStatus.OK
+			result, status_code = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}, HTTPStatus.OK
 			logger.debug('Couldnt delete user from app server')
 	except UserNotFoundException:
 		result, status_code = {'Error' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND

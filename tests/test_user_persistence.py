@@ -80,6 +80,47 @@ def test_cant_block_user_because_user_is_already_blocked(postgresql_db):
   with pytest.raises(UserlAlreadyBlockedException):
     sut.block_user('test@test.com')
 
+def test_unblock_existent_user_successfully(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+  assert user.full_name == 'Test User'
+  assert user.phone_number == '444-4444'
+  assert user.blocked_user == '0'
+  sut.block_user('test@test.com')
+
+  sut.unblock_user('test@test.com')
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+  assert user.blocked_user == '0'
+
+def test_cant_unblock_user_because_doesnt_exist(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  with pytest.raises(UserNotFoundException):
+    sut.unblock_user('testing@test.com')
+
+def test_cant_unblock_user_because_user_is_already_unblocked(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+  sut.block_user('test@test.com')
+  sut.unblock_user('test@test.com')
+
+  with pytest.raises(UserlAlreadyBlockedException):
+    sut.unblock_user('test@test.com')
+
 def test_retrieve_inexistent_user(postgresql_db):
   session = postgresql_db.session
   create_all(session)
