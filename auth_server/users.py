@@ -36,13 +36,13 @@ def _delete_user(user_email):
 			result, status_code = {'Delete' : 'successfully deleted user with email {0}'.format(user_email)}, HTTPStatus.OK
 			logger.debug('User deleted')
 		else:
-			result, status_code = {'Delete' : 'successfully deleted user with email {0}, but couldnt delete user in app server'.format(user_email)}, HTTPStatus.OK
+			result, status_code = {'Error' : 'successfully deleted user with email {0}, but couldnt delete user in app server'.format(user_email)}, HTTPStatus.OK
 			logger.debug('Couldnt delete user from app server')
 	except UserNotFoundException:
-		result, status_code = {'Delete' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND
+		result, status_code = {'Error' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND
 		logger.debug('User doesnt exist')
 	except UserlAlreadyBlockedException:
-		result, status_code = {'Delete' : 'User {0} was already deleted'.format(user_email)}, HTTPStatus.NOT_FOUND
+		result, status_code = {'Error' : 'User {0} was already deleted'.format(user_email)}, HTTPStatus.NOT_FOUND
 		logger.debug('User was already deleted')
 
 	return result, status_code

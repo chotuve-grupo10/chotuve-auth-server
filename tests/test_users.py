@@ -43,7 +43,7 @@ def test_cant_delete_user_because_doesnt_exist(client):
 
 			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
-			value_expected = {'Delete' : 'User {0} doesnt exist'.format(user_email)}
+			value_expected = {'Error' : 'User {0} doesnt exist'.format(user_email)}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected
@@ -61,7 +61,7 @@ def test_cant_delete_user_already_deleted(client):
 
 			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
-			value_expected = {'Delete' : 'User {0} was already deleted'.format(user_email)}
+			value_expected = {'Error' : 'User {0} was already deleted'.format(user_email)}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected

@@ -8,6 +8,16 @@ components:
       bearerFormat: JWT
 security:
   - bearerAuth: []
+definitions:
+  DeleteUserSuccessfullyResponse:
+    type: object
+    properties:
+      Delete:
+        type: string
+        example: successfully deleted user with email some@some.com
+tags:
+  - name: admins
+    description: Secured Admin-only calls
 parameters:
   - in: header
     name: authorization
@@ -22,7 +32,13 @@ parameters:
 responses:
   200:
     description: user deleted.
-  401:
+    schema:
+      $ref: '#/definitions/DeleteUserSuccessfullyResponse'
+  403:
     description: you dont have the necessary permissions to delete a user or your token is invalid.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
   500:
     description: there is an internal problem with the auth server.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
