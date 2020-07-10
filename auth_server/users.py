@@ -28,13 +28,16 @@ def _delete_user(user_email):
 		logger.debug('Successfully deleted user')
 
 		logger.debug('Requesting to delete user from app server')
-		delete_user_app_server_url = os.environ.get('APP_SERVER_URL') + 'api/users/' + user_email
+		delete_user_app_server_url = os.environ.get('APP_SERVER_URL') + '/api/users/' + user_email
+		logger.debug('Url: ' + delete_user_app_server_url)
 		response_app_server = requests.delete(url=delete_user_app_server_url)
 
 		if response_app_server.status_code == HTTPStatus.OK:
 			result, status_code = {'Delete' : 'successfully deleted user with email {0}'.format(user_email)}, HTTPStatus.OK
+			logger.debug('User deleted')
 		else:
 			result, status_code = {'Delete' : 'successfully deleted user with email {0}, but couldnt delete user in app server'.format(user_email)}, HTTPStatus.OK
+			logger.debug('Couldnt delete user from app server')
 	except UserNotFoundException:
 		result, status_code = {'Delete' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND
 		logger.debug('User doesnt exist')
