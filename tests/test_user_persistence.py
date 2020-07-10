@@ -3,6 +3,7 @@ import pytest
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
+from auth_server.exceptions.user_already_unblocked_exception import UserlAlreadyUnblockedException
 from auth_server.model.user import User
 from auth_server.persistence.user_persistence import UserPersistence
 
@@ -118,7 +119,7 @@ def test_cant_unblock_user_because_user_is_already_unblocked(postgresql_db):
   sut.block_user('test@test.com')
   sut.unblock_user('test@test.com')
 
-  with pytest.raises(UserlAlreadyBlockedException):
+  with pytest.raises(UserlAlreadyUnblockedException):
     sut.unblock_user('test@test.com')
 
 def test_retrieve_inexistent_user(postgresql_db):
