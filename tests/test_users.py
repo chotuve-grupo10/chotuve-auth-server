@@ -66,6 +66,29 @@ def test_cant_delete_user_already_deleted(client):
 			assert mock.called
 			assert json.loads(response.data) == value_expected
 
+def test_cant_delete_user_app_server_fails(client):
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with patch.object(UserPersistence,'block_user') as user_persistence:
+
+			with patch.object(requests,'delete') as delete_mock:
+
+				delete_mock.return_value.status_code = 500
+
+				hed = {'authorization': 'TOKEN'}
+
+				response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+				value_expected = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}
+
+				assert mock.called
+				assert user_persistence.called
+				assert json.loads(response.data) == value_expected
+
 def test_delete_user_successfully(client):
 	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
 

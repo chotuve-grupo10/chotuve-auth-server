@@ -11,6 +11,7 @@ from auth_server.decorators.admin_user_required_decorator import admin_user_requ
 from auth_server.persistence.user_persistence import UserPersistence
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
+from auth_server.exceptions.user_already_unblocked_exception import UserlAlreadyUnblockedException
 
 users_bp = Blueprint('users', __name__)
 logger = logging.getLogger('gunicorn.error')
@@ -38,6 +39,12 @@ def _delete_user(user_email):
 		else:
 			result, status_code = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}, HTTPStatus.OK
 			logger.debug('Couldnt delete user from app server')
+			try:
+				user_persistence.unblock_user(user_email)
+			except UserNotFoundException:
+				logger.critical('Couldnt find user to unblock')
+			except UserlAlreadyUnblockedException:
+				logger.critical('User was never blocked')
 	except UserNotFoundException:
 		result, status_code = {'Error' : 'User {0} doesnt exist'.format(user_email)}, HTTPStatus.NOT_FOUND
 		logger.debug('User doesnt exist')
