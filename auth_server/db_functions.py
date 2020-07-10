@@ -181,7 +181,7 @@ def get_all_users(client):
 	cursor = client.cursor()
 	logger.debug('Getting all users')
 	try:
-		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}'".format(value=0))
+		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}' AND blocked_user = '{blocked_value}'".format(value=0, blocked_value=0))
 		users = cursor.fetchall()
 		logger.debug('Obtained all users')
 		cursor.close()
