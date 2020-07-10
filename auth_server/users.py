@@ -37,7 +37,7 @@ def _delete_user(user_email):
 			result, status_code = {'Delete' : 'successfully deleted user with email {0}'.format(user_email)}, HTTPStatus.OK
 			logger.debug('User deleted')
 		else:
-			result, status_code = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}, HTTPStatus.OK
+			result, status_code = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}, HTTPStatus.INTERNAL_SERVER_ERROR
 			logger.debug('Couldnt delete user from app server')
 			try:
 				user_persistence.unblock_user(user_email)
