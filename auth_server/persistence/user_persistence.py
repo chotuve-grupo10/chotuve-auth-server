@@ -1,6 +1,7 @@
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
+from auth_server.exceptions.user_already_unblocked_exception import UserlAlreadyUnblockedException
 from auth_server.model.user import User
 
 class UserPersistence():
@@ -28,4 +29,15 @@ class UserPersistence():
       raise UserlAlreadyBlockedException
 
     user.blocked_user = '1'
+    self.db.session.commit()
+
+  def unblock_user(self, email):
+    user = self.db.session.query(User).get(email)
+    if user is None:
+      raise UserNotFoundException
+
+    if user.blocked_user == '0':
+      raise UserlAlreadyUnblockedException
+
+    user.blocked_user = '0'
     self.db.session.commit()

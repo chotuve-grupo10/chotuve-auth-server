@@ -1,3 +1,4 @@
+import requests
 import pytest
 from unittest.mock import patch
 import simplejson as json
@@ -42,7 +43,7 @@ def test_cant_delete_user_because_doesnt_exist(client):
 
 			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
-			value_expected = {'Delete' : 'User {0} doesnt exist'.format(user_email)}
+			value_expected = {'Error' : 'User {0} doesnt exist'.format(user_email)}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected
@@ -60,10 +61,33 @@ def test_cant_delete_user_already_deleted(client):
 
 			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
-			value_expected = {'Delete' : 'User {0} was already deleted'.format(user_email)}
+			value_expected = {'Error' : 'User {0} was already deleted'.format(user_email)}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected
+
+def test_cant_delete_user_app_server_fails(client):
+	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = True
+
+		with patch.object(UserPersistence,'block_user') as user_persistence:
+
+			with patch.object(requests,'delete') as delete_mock:
+
+				delete_mock.return_value.status_code = 500
+
+				hed = {'authorization': 'TOKEN'}
+
+				response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+				value_expected = {'Error' : 'Couldnt delete user {0} in app server'.format(user_email)}
+
+				assert mock.called
+				assert user_persistence.called
+				assert json.loads(response.data) == value_expected
 
 def test_delete_user_successfully(client):
 	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
@@ -74,15 +98,19 @@ def test_delete_user_successfully(client):
 
 		with patch.object(UserPersistence,'block_user') as user_persistence:
 
-			hed = {'authorization': 'TOKEN'}
+			with patch.object(requests,'delete') as delete_mock:
 
-			response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+				delete_mock.return_value.status_code = 200
 
-			value_expected = {'Delete':'successfully deleted user with email {0}'.format(user_email)}
+				hed = {'authorization': 'TOKEN'}
 
-			assert mock.called
-			assert user_persistence.called
-			assert json.loads(response.data) == value_expected
+				response = client.delete('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+				value_expected = {'Delete':'successfully deleted user with email {0}'.format(user_email)}
+
+				assert mock.called
+				assert user_persistence.called
+				assert json.loads(response.data) == value_expected
 
 def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
 	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:

@@ -1,0 +1,2 @@
+class UserlAlreadyUnblockedException(Exception):
+  pass
