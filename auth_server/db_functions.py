@@ -9,6 +9,7 @@ EMAIL_POSITION = 0
 FULL_NAME_POSITION = 1
 PHONE_NUMBER_POSITION = 2
 PROFILE_PICTURE_POSITION = 3
+BLOCKED_USER_POSITION = 8
 
 create_table_command = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
@@ -181,7 +182,7 @@ def get_all_users(client):
 	cursor = client.cursor()
 	logger.debug('Getting all users')
 	try:
-		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}' AND blocked_user = '{blocked_value}'".format(value=0, blocked_value=0))
+		cursor.execute("SELECT * FROM users WHERE admin_user = '{value}'".format(value=0))
 		users = cursor.fetchall()
 		logger.debug('Obtained all users')
 		cursor.close()
@@ -222,5 +223,6 @@ def serialize_user(user):
 		'email' : user[EMAIL_POSITION],
 		'full name' : user[FULL_NAME_POSITION],
 		'phone number' : user[PHONE_NUMBER_POSITION],
-		'profile picture': user[PROFILE_PICTURE_POSITION]
+		'profile picture': user[PROFILE_PICTURE_POSITION],
+		'blocked': user[BLOCKED_USER_POSITION] == '1'
 	}
