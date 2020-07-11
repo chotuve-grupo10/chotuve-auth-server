@@ -224,5 +224,5 @@ def serialize_user(user):
 		'full name' : user[FULL_NAME_POSITION],
 		'phone number' : user[PHONE_NUMBER_POSITION],
 		'profile picture': user[PROFILE_PICTURE_POSITION],
-		'blocked': True if user[BLOCKED_USER_POSITION]=='1' else False
+		'blocked': True if user[BLOCKED_USER_POSITION] == '1' else False
 	}
