@@ -5,6 +5,7 @@ from firebase_admin import credentials
 from firebase_admin import auth
 from flask import Blueprint, current_app, request
 from flask_cors import CORS, cross_origin
+from flask_mail import Mail, Message
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -20,7 +21,6 @@ from auth_server.exceptions.user_not_found_exception import UserNotFoundExceptio
 from auth_server.model.user import User
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
 from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
-
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -33,6 +33,8 @@ logger = logging.getLogger('gunicorn.error')
 # TODO: puede ser variable de entorno
 cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
 firebase_app = firebase_admin.initialize_app(cred)
+
+mail = Mail()
 
 ### Register methods ###
 
@@ -192,6 +194,10 @@ def _forgot_password(user_email):
 		user = user_persistence.get_user_by_email(user_email)
 		result = {"Forgot password" : "email sent to {0}".format(user_email)}
 		status_code = HTTPStatus.OK
+
+		msg = Message("Hello",
+              recipients=["retchegaray@fi.uba.ar"], body='This is a test')
+		mail.send(msg)
 	except UserNotFoundException:
 		result = {"Error" : "user {0} doesnt exist".format(user_email)}
 		status_code = HTTPStatus.NOT_FOUND
