@@ -253,7 +253,7 @@ def test_forgot_password_fails_user_doesnt_exist(client):
 		with patch.object(UserPersistence,'get_user_by_email', new=raise_not_found_exception) as get_user:
 
 				user_email = 'test@test.com'
-				response = client.post('/api/users/' + user_email + '/password', json={},
+				response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
 											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 
@@ -270,7 +270,7 @@ def test_forgot_password_fails_user_is_firebase_user(client):
 
 
 			user_email = 'test@test.com'
-			response = client.post('/api/users/' + user_email + '/password', json={},
+			response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
 										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 
