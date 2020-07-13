@@ -186,7 +186,17 @@ def _validate_token():
 @app_server_token_required
 @swag_from('docs/forgot_password.yml')
 def _forgot_password(user_email):
-	return {"Forgot password" : "email sent to {0}".format(user_email)}
+
+	try:
+		user_persistence = UserPersistence(current_app.db)
+		user = user_persistence.get_user_by_email(user_email)
+		result = {"Forgot password" : "email sent to {0}".format(user_email)}
+		status_code = HTTPStatus.OK
+	except UserNotFoundException:
+		result = {"Error" : "user {0} doesnt exist".format(user_email)}
+		status_code = HTTPStatus.NOT_FOUND
+
+	return result, status_code
 
 @authentication_bp.route('/api/reset_password/', methods=['GET'])
 @swag_from('docs/reset_password.yml')
