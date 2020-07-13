@@ -258,3 +258,20 @@ def test_forgot_password_fails_user_doesnt_exist(client):
 
 
 				assert json.loads(response.data) == {"Error" : "user {0} doesnt exist".format(user_email)}
+
+def test_forgot_password_fails_user_is_firebase_user(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test', 'test', 'test', '123', 'test', '1', '0', '0')
+
+
+			user_email = 'test@test.com'
+			response = client.post('/api/users/' + user_email + '/password', json={},
+										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+
+			assert json.loads(response.data) == {"Error" : "user {0} is a firebase user".format(user_email)}

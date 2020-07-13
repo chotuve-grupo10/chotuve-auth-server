@@ -189,21 +189,29 @@ def _validate_token():
 @swag_from('docs/forgot_password.yml')
 def _forgot_password(user_email):
 
+	logger.debug('Forgot password request from user:{0}'.format(user_email))
+
 	try:
 		user_persistence = UserPersistence(current_app.db)
 		user = user_persistence.get_user_by_email(user_email)
 
-		## chequear que no sea de firebase!
-		result = {"Forgot password" : "email sent to {0}".format(user_email)}
-		status_code = HTTPStatus.OK
+		if user.is_firebase_user():
+			result = {"Error" : "user {0} is a firebase user".format(user_email)}
+			status_code = HTTPStatus.PRECONDITION_FAILED
+			logger.debug('User is firebase user. Cant recover password')
+		else:
+			result = {"Forgot password" : "email sent to {0}".format(user_email)}
+			status_code = HTTPStatus.OK
 
-		msg = Message("Hello",
-              recipients=[user_email],
-			  body='This is a test')
-		mail.send(msg)
+			msg = Message("Hello",
+				recipients=[user_email],
+				body='This is a test')
+			mail.send(msg)
+			logger.debug('Email sent to user:{0}'.format(user_email))
 	except UserNotFoundException:
 		result = {"Error" : "user {0} doesnt exist".format(user_email)}
 		status_code = HTTPStatus.NOT_FOUND
+		logger.debug('User doesnt exist')
 
 	return result, status_code
 
