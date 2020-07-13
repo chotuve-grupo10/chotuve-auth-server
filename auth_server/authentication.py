@@ -182,10 +182,11 @@ def _validate_token():
 
 #### Updating methods ###
 
-@authentication_bp.route('/api/forgot_password/', methods=['GET'])
+@authentication_bp.route('/api/users/<user_email>/password', methods=['POST'])
+@app_server_token_required
 @swag_from('docs/forgot_password.yml')
-def _forgot_password():
-	return {}
+def _forgot_password(user_email):
+	return {"Forgot password" : "email sent to {0}".format(user_email)}
 
 @authentication_bp.route('/api/reset_password/', methods=['GET'])
 @swag_from('docs/reset_password.yml')
