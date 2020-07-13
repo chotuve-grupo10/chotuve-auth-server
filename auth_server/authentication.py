@@ -192,11 +192,14 @@ def _forgot_password(user_email):
 	try:
 		user_persistence = UserPersistence(current_app.db)
 		user = user_persistence.get_user_by_email(user_email)
+
+		## chequear que no sea de firebase!
 		result = {"Forgot password" : "email sent to {0}".format(user_email)}
 		status_code = HTTPStatus.OK
 
 		msg = Message("Hello",
-              recipients=["retchegaray@fi.uba.ar"], body='This is a test')
+              recipients=[user_email],
+			  body='This is a test')
 		mail.send(msg)
 	except UserNotFoundException:
 		result = {"Error" : "user {0} doesnt exist".format(user_email)}
