@@ -1,4 +1,5 @@
 from auth_server.db_functions import create_app_servers_table_command
+from auth_server.db_functions import create_reset_password_table_command
 
 create_table_users = """CREATE TABLE Users (
 						email VARCHAR(255) PRIMARY KEY ,
@@ -16,4 +17,5 @@ def all_migrations():
   migration_list = []
   migration_list.append(create_table_users)
   migration_list.append(create_app_servers_table_command)
+  migration_list.append(create_reset_password_table_command)
   return migration_list
