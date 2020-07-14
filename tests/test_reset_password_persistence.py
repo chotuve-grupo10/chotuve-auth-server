@@ -7,6 +7,10 @@ from auth_server.exceptions.reset_password_not_found_exception import ResetPassw
 
 def create_reset_password_table(conn):
     migrations = db.migrations.all_migrations()
+    conn.execute(migrations[0])
+    conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
+						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
+            '444-4444', null, 'xxxxx', 'xxxxx', '0', '0', '0')""")
     conn.execute(migrations[2])
 
 def query_first_reset_password(conn):
