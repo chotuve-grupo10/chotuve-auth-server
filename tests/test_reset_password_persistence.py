@@ -32,6 +32,20 @@ def test_save_reset_password_successfully(postgresql_db):
     assert row is not None
     assert row[1] == email
 
+def test_save_reset_password_fails_user_doesnt_exist(postgresql_db):
+    session = postgresql_db.session
+    create_reset_password_table(session)
+    assert query_first_reset_password(session) is None
+
+    email = 'hola@hola.com'
+
+    reset_password_to_save = ResetPassword(email)
+    sut = ResetPasswordPersistence(postgresql_db)
+    sut.save(reset_password_to_save)
+    row = query_first_reset_password(session)
+    assert row is not None
+    assert row[1] == email
+
 def test_reset_password_with_given_email_not_found(postgresql_db):
     session = postgresql_db.session
     create_reset_password_table(session)
