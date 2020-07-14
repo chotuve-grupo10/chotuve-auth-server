@@ -4,7 +4,7 @@ import pytest
 from auth_server.model.reset_password import ResetPassword
 from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
-from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserExcpetion
+from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 
 def create_reset_password_table(conn):
     migrations = db.migrations.all_migrations()
@@ -42,7 +42,7 @@ def test_save_reset_password_fails_user_doesnt_exist(postgresql_db):
 
     reset_password_to_save = ResetPassword(email)
     sut = ResetPasswordPersistence(postgresql_db)
-    with pytest.raises(ResetPasswordForNonExistentUserExcpetion):
+    with pytest.raises(ResetPasswordForNonExistentUserException):
         sut.save(reset_password_to_save)
 
 

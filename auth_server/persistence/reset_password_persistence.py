@@ -1,7 +1,7 @@
 import psycopg2
 from auth_server.model.reset_password import ResetPassword
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
-from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserExcpetion
+from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 
 class ResetPasswordPersistence():
   def __init__(self, db_connection):
@@ -12,7 +12,7 @@ class ResetPasswordPersistence():
         self.db.session.add(reset_password)
         self.db.session.commit()
     except psycopg2.errors.ForeignKeyViolation:
-        ResetPasswordForNonExistentUserExcpetion
+        raise ResetPasswordForNonExistentUserException
 
   def get_reset_password_by_email(self, email):
     reset_password = self.db.session.query(ResetPassword).get(email)

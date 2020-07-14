@@ -1,2 +1,2 @@
-class ResetPasswordForNonExistentUserExcpetion(Exception):
+class ResetPasswordForNonExistentUserException(Exception):
   pass
