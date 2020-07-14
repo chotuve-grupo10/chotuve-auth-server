@@ -30,7 +30,7 @@ def test_save_reset_password_successfully(postgresql_db):
     sut.save(reset_password_to_save)
     row = query_first_reset_password(session)
     assert row is not None
-    assert row[1].email == email
+    assert row[1] == email
 
 # def test_app_server_with_given_token_not_found(postgresql_db):
 #     session = postgresql_db.session
