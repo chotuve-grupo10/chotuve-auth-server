@@ -1,0 +1,2 @@
+class ResetPasswordForNonExistentUserExcpetion(Exception):
+  pass
