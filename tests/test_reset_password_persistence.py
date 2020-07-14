@@ -1,7 +1,6 @@
 import datetime
 import db.migrations
 import pytest
-import psycopg2
 from auth_server.model.reset_password import ResetPassword
 from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
@@ -43,7 +42,7 @@ def test_save_reset_password_fails_user_doesnt_exist(postgresql_db):
 
     reset_password_to_save = ResetPassword(email)
     sut = ResetPasswordPersistence(postgresql_db)
-    with pytest.raises(psycopg2.errors.ForeignKeyViolation):
+    with pytest.raises(ResetPasswordForNonExistentUserException):
         sut.save(reset_password_to_save)
 
 

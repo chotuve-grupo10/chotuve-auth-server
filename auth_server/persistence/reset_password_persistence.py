@@ -1,4 +1,4 @@
-import psycopg2
+import sqlalchemy
 from auth_server.model.reset_password import ResetPassword
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
@@ -11,7 +11,7 @@ class ResetPasswordPersistence():
     try:
         self.db.session.add(reset_password)
         self.db.session.commit()
-    except psycopg2.errors.ForeignKeyViolation:
+    except sqlalchemy.exc.IntegrityError:
         raise ResetPasswordForNonExistentUserException
 
   def get_reset_password_by_email(self, email):
