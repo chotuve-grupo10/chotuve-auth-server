@@ -207,22 +207,45 @@ def _forgot_password(user_email):
 			reset_password_persistence = ResetPasswordPersistence(current_app.db)
 			try:
 				# Ya teniamos un codigo para resetear la pass de este usuario
+				# Si esta vencido le damos uno nuevo y sino le mandamos el mismo
 				reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
+				logger.debug('User already has reset password')
 				if reset_password_obtained.is_token_expired():
-					pass
+					try:
+						logger.debug('Token expired. Regenerating new one')
+						reset_password_persistence.delete(user_email)
+						reset_password_updated = ResetPassword(user_email)
+						reset_password_persistence.save(reset_password_updated)
+
+						msg = Message("Cambiar contraseña",
+						recipients=[user_email],
+						body='Hola, este es tu codigo:{0}'.format(reset_password_updated.token))
+						mail.send(msg)
+
+						result = {"Forgot password" : "email sent to {0}".format(user_email)}
+						status_code = HTTPStatus.OK
+						logger.debug('Email sent to user:{0}'.format(user_email))
+					except ResetPasswordNotFoundException:
+						logger.critical('Trying to delete non existent reset password')
+						result = {"Error" : "couldnt update token for user {0}".format(user_email)}
+						status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+					except ResetPasswordForNonExistentUserException:
+						logger.critical('Trying to generate reset password for inexistent user in Users table. Super critical!')
+						result = {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+						status_code = HTTPStatus.INTERNAL_SERVER_ERROR
 				else:
+					logger.debug('Token is still valid. Sending email again')
 					msg = Message("Cambiar contraseña",
 						recipients=[user_email],
 						body='Hola, este es tu codigo:{0}'.format(reset_password_obtained.token))
 					mail.send(msg)
-
 					result = {"Forgot password" : "email sent to {0}".format(user_email)}
 					status_code = HTTPStatus.OK
-
 					logger.debug('Email sent to user:{0}'.format(user_email))
 			except ResetPasswordNotFoundException:
 				# No tenemos un codigo activo para resetear la pass de este user
 				# Creamos uno
+				logger.debug('User hasnt reset password. Lets create one')
 				try:
 					reset_password_to_save = ResetPassword(user_email)
 					reset_password_persistence.save(reset_password_to_save)

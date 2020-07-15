@@ -350,3 +350,79 @@ def test_forgot_password_with_existent_reset_password_and_not_expired_token_succ
 												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 					assert json.loads(response.data) == {"Forgot password" : "email sent to {0}".format(user_email)}
+
+
+def test_forgot_password_with_existent_reset_password_and_expired_token_not_found_should_never_happen(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as reset_password_mock:
+
+				with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+					is_token_expired_mock.return_value = True
+
+					with patch.object(ResetPasswordPersistence,'delete', new=raise_reset_password_not_found_exception) as reset_password_not_found_mock:
+
+						user_email = 'test@test.com'
+						response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+													headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+						assert json.loads(response.data) == {"Error" : "couldnt update token for user {0}".format(user_email)}
+
+
+def test_forgot_password_with_existent_reset_password_and_expired_token_user_not_found_in_users_should_never_happen(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as reset_password_mock:
+
+				with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+					is_token_expired_mock.return_value = True
+
+					with patch.object(ResetPasswordPersistence,'delete') as delete_mock:
+
+						with patch.object(ResetPasswordPersistence,'save', new=raise_reset_password_for_non_existent_user_exception) as reset_password_not_found_mock:
+
+							user_email = 'test@test.com'
+							response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+														headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+							assert json.loads(response.data) == {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+
+
+def test_forgot_password_with_existent_reset_password_and_expired_token_successful(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as reset_password_mock:
+
+				with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+					is_token_expired_mock.return_value = True
+
+					with patch.object(ResetPasswordPersistence,'delete') as delete_mock:
+
+						with patch.object(ResetPasswordPersistence,'save') as save_mock:
+
+							user_email = 'test@test.com'
+							response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+														headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+							assert json.loads(response.data) == {"Forgot password" : "email sent to {0}".format(user_email)}
