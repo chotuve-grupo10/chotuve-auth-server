@@ -9,6 +9,7 @@ from auth_server.decorators.app_server_token_required_decorator import APP_SERVE
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
+from auth_server.model.reset_password import ResetPassword
 
 ####### FUNCS ##########
 
@@ -319,6 +320,28 @@ def test_forgot_password_with_new_reset_password_successful(client):
 			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
 
 			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email', new=raise_reset_password_not_found_exception) as reset_password_not_found_mock:
+
+				with patch.object(ResetPasswordPersistence,'save') as save_reset_password:
+
+					user_email = 'test@test.com'
+					response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+					assert json.loads(response.data) == {"Forgot password" : "email sent to {0}".format(user_email)}
+
+
+def test_forgot_password_with_existent_reset_password_and_not_expired_token_successful(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as reset_password_mock:
+
+				reset_password_mock.return_value = ResetPassword('test@test.com')
 
 				with patch.object(ResetPasswordPersistence,'save') as save_reset_password:
 

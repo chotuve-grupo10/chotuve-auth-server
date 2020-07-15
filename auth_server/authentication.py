@@ -215,6 +215,10 @@ def _forgot_password(user_email):
 						recipients=[user_email],
 						body='Hola, este es tu codigo:{0}'.format(reset_password_obtained.token))
 					mail.send(msg)
+
+					result = {"Forgot password" : "email sent to {0}".format(user_email)}
+					status_code = HTTPStatus.OK
+
 					logger.debug('Email sent to user:{0}'.format(user_email))
 			except ResetPasswordNotFoundException:
 				# No tenemos un codigo activo para resetear la pass de este user
