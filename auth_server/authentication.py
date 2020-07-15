@@ -5,7 +5,6 @@ from firebase_admin import credentials
 from firebase_admin import auth
 from flask import Blueprint, current_app, request
 from flask_cors import CORS, cross_origin
-from flask_mail import Mail, Message
 from flasgger import swag_from
 # from requests.auth import HTTPBasicAuth
 # from app_server.http_functions import get_auth_server_login, get_auth_server_register
@@ -25,6 +24,7 @@ from auth_server.persistence.reset_password_persistence import ResetPasswordPers
 from auth_server.model.reset_password import ResetPassword
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
+from auth_server.utilities.mail_functions import send_email_with_reset_password_token
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -37,8 +37,6 @@ logger = logging.getLogger('gunicorn.error')
 # TODO: puede ser variable de entorno
 cred = credentials.Certificate('chotuve-android-app-firebase-adminsdk-2ry62-ab27b1a04b.json')
 firebase_app = firebase_admin.initialize_app(cred)
-
-mail = Mail()
 
 ### Register methods ###
 
@@ -191,6 +189,7 @@ def _validate_token():
 @authentication_bp.route('/api/users/<user_email>/reset_password_token', methods=['POST'])
 @app_server_token_required
 @swag_from('docs/forgot_password.yml')
+# pylint: disable=R0915
 def _forgot_password(user_email):
 
 	logger.debug('Forgot password request from user:{0}'.format(user_email))
@@ -217,10 +216,7 @@ def _forgot_password(user_email):
 						reset_password_updated = ResetPassword(user_email)
 						reset_password_persistence.save(reset_password_updated)
 
-						msg = Message("Cambiar contraseña",
-						recipients=[user_email],
-						body='Hola, este es tu codigo:{0}'.format(reset_password_updated.token))
-						mail.send(msg)
+						send_email_with_reset_password_token(user_email, reset_password_updated.token)
 
 						result = {"Forgot password" : "email sent to {0}".format(user_email)}
 						status_code = HTTPStatus.OK
@@ -235,10 +231,7 @@ def _forgot_password(user_email):
 						status_code = HTTPStatus.INTERNAL_SERVER_ERROR
 				else:
 					logger.debug('Token is still valid. Sending email again')
-					msg = Message("Cambiar contraseña",
-						recipients=[user_email],
-						body='Hola, este es tu codigo:{0}'.format(reset_password_obtained.token))
-					mail.send(msg)
+					send_email_with_reset_password_token(user_email, reset_password_obtained.token)
 					result = {"Forgot password" : "email sent to {0}".format(user_email)}
 					status_code = HTTPStatus.OK
 					logger.debug('Email sent to user:{0}'.format(user_email))
@@ -253,10 +246,8 @@ def _forgot_password(user_email):
 					result = {"Forgot password" : "email sent to {0}".format(user_email)}
 					status_code = HTTPStatus.OK
 
-					msg = Message("Cambiar contraseña",
-						recipients=[user_email],
-						body='Hola, este es tu codigo:{0}'.format(reset_password_to_save.token))
-					mail.send(msg)
+					send_email_with_reset_password_token(user_email, reset_password_to_save.token)
+
 					logger.debug('Email sent to user:{0}'.format(user_email))
 				except ResetPasswordForNonExistentUserException:
 					logger.critical('Trying to generate reset password for inexistent user in Users table!')
