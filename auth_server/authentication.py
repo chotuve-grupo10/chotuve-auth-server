@@ -21,6 +21,10 @@ from auth_server.exceptions.user_not_found_exception import UserNotFoundExceptio
 from auth_server.model.user import User
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
 from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
+from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
+from auth_server.model.reset_password import ResetPassword
+from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
+from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -198,16 +202,39 @@ def _forgot_password(user_email):
 		if user.is_firebase_user():
 			result = {"Error" : "user {0} is a firebase user".format(user_email)}
 			status_code = HTTPStatus.PRECONDITION_FAILED
-			logger.debug('User is firebase user. Cant recover password')
+			logger.debug('User is firebase user. Cant change password')
 		else:
-			result = {"Forgot password" : "email sent to {0}".format(user_email)}
-			status_code = HTTPStatus.OK
+			reset_password_persistence = ResetPasswordPersistence(current_app.db)
+			try:
+				# Ya teniamos un codigo para resetear la pass de este usuario
+				reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
+				if reset_password_obtained.is_token_expired():
+					pass
+				else:
+					msg = Message("Cambiar contraseña",
+						recipients=[user_email],
+						body='Hola, este es tu codigo:{0}'.format(reset_password_obtained.token))
+					mail.send(msg)
+					logger.debug('Email sent to user:{0}'.format(user_email))
+			except ResetPasswordNotFoundException:
+				# No tenemos un codigo activo para resetear la pass de este user
+				# Creamos uno
+				try:
+					reset_password_to_save = ResetPassword(user_email)
+					reset_password_persistence.save(reset_password_to_save)
 
-			msg = Message("Hello",
-				recipients=[user_email],
-				body='This is a test')
-			mail.send(msg)
-			logger.debug('Email sent to user:{0}'.format(user_email))
+					result = {"Forgot password" : "email sent to {0}".format(user_email)}
+					status_code = HTTPStatus.OK
+
+					msg = Message("Cambiar contraseña",
+						recipients=[user_email],
+						body='Hola, este es tu codigo:{0}'.format(reset_password_to_save.token))
+					mail.send(msg)
+					logger.debug('Email sent to user:{0}'.format(user_email))
+				except ResetPasswordForNonExistentUserException:
+					logger.critical('Trying to generate reset password for inexistent user in Users table!')
+					result = {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
 	except UserNotFoundException:
 		result = {"Error" : "user {0} doesnt exist".format(user_email)}
 		status_code = HTTPStatus.NOT_FOUND

@@ -6,6 +6,19 @@ from auth_server.model.user import User
 from auth_server.exceptions.user_already_registered_exception import UserAlreadyRegisteredException
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.decorators.app_server_token_required_decorator import APP_SERVER_TOKEN_HEADER
+from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
+from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
+from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
+
+####### FUNCS ##########
+
+def raise_reset_password_not_found_exception(cls, *args, **kwargs):
+	raise ResetPasswordNotFoundException
+
+def raise_reset_password_for_non_existent_user_exception(cls, *args, **kwargs):
+	raise ResetPasswordForNonExistentUserException
+
+####### TESTS ###############
 
 def test_register_fails_invalid_app_server_token(client):
 
@@ -266,7 +279,7 @@ def test_forgot_password_fails_user_is_firebase_user(client):
 
 		with patch.object(UserPersistence,'get_user_by_email') as get_user:
 
-			get_user.return_value = User('test', 'test', 'test', '123', 'test', '1', '0', '0')
+			get_user.return_value = User('test', 'test', 'test', '123', 'test', True, False, False)
 
 
 			user_email = 'test@test.com'
@@ -275,3 +288,42 @@ def test_forgot_password_fails_user_is_firebase_user(client):
 
 
 			assert json.loads(response.data) == {"Error" : "user {0} is a firebase user".format(user_email)}
+
+
+def test_forgot_password_with_new_reset_password_fails_this_should_never_happen(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email', new=raise_reset_password_not_found_exception) as reset_password_not_found_mock:
+
+				with patch.object(ResetPasswordPersistence,'save', new=raise_reset_password_for_non_existent_user_exception) as save_reset_password:
+
+					user_email = 'test@test.com'
+					response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+					assert json.loads(response.data) == {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+
+def test_forgot_password_with_new_reset_password_successful(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user:
+
+			get_user.return_value = User('test@test.com', 'test', 'test', '123', 'test', False, False, False)
+
+			with patch.object(ResetPasswordPersistence,'get_reset_password_by_email', new=raise_reset_password_not_found_exception) as reset_password_not_found_mock:
+
+				with patch.object(ResetPasswordPersistence,'save') as save_reset_password:
+
+					user_email = 'test@test.com'
+					response = client.post('/api/users/' + user_email + '/reset_password_token', json={},
+												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+					assert json.loads(response.data) == {"Forgot password" : "email sent to {0}".format(user_email)}
