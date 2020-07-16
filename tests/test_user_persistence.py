@@ -172,3 +172,19 @@ def test_cant_change_password_for_firebase_user(postgresql_db):
 
   with pytest.raises(CantChangePasswordForFirebaseUser):
     sut.change_password_for_user('test@test.com', 'password')
+
+def test_change_password_successfully(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  old_hash = user.hash
+
+  sut.change_password_for_user('test@test.com', 'password')
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  assert not user.hash ==  old_hash
