@@ -274,8 +274,14 @@ def _reset_password(user_email):
 	try:
 		reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
 		if reset_password_obtained.token == token_received:
-			result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
-			status_code = HTTPStatus.OK
+			if reset_password_obtained.is_token_expired():
+				logger.debug('Token is expired')
+				result = {'Error' : 'token expired'}
+				status_code = HTTPStatus.UNAUTHORIZED
+			else:
+				logger.debug('Valid token')
+				result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
+				status_code = HTTPStatus.OK
 		else:
 			logger.debug('The token {0} is NOT correct'.format(token_received))
 			result = {'Error' : 'token is NOT correct'}

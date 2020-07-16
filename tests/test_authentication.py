@@ -458,3 +458,25 @@ def test_reset_password_fails_token_doesnt_match(client):
 										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 			assert json.loads(response.data) == {'Error' : 'token is NOT correct'}
+
+
+def test_reset_password_fails_token_is_expired(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as get_reset_password_mock:
+
+			user_email = 'test@test.com'
+			reset_password = ResetPassword(user_email)
+			get_reset_password_mock.return_value = reset_password
+
+			with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+				is_token_expired_mock.return_value = True
+
+				body = {'new_password': 'my new password', 'token': reset_password.token}
+				response = client.put('/api/users/' + user_email + '/password', json=body,
+											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+				assert json.loads(response.data) == {'Error' : 'token expired'}
