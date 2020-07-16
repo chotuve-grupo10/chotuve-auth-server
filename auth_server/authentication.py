@@ -286,6 +286,7 @@ def _reset_password(user_email):
 
 				try:
 					user_persistence.change_password_for_user(user_email, password_received)
+					reset_password_persistence.delete(user_email)
 					result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
 					status_code = HTTPStatus.OK
 					logger.debug('Password updated')
@@ -296,6 +297,10 @@ def _reset_password(user_email):
 				except UserNotFoundException:
 					logger.critical('Cant find user!')
 					result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+				except ResetPasswordNotFoundException:
+					logger.critical('Cant reset password to delete!')
+					result = {'Error' : 'cant delete reset password request for user {0}'.format(user_email)}
 					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
 		else:
 			logger.debug('The token {0} is NOT correct'.format(token_received))
