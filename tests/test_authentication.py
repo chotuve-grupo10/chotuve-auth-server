@@ -483,7 +483,7 @@ def test_reset_password_fails_token_is_expired(client):
 				response = client.put('/api/users/' + user_email + '/password', json=body,
 											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
-				assert json.loads(response.data) == {'Error' : 'token expired'}
+				assert json.loads(response.data) == {'Error' : 'token expired. Already sent new one'}
 
 def test_reset_password_fails_trying_change_password_for_firebase_user_should_never_happen(client):
 

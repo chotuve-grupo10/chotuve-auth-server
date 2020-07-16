@@ -278,8 +278,9 @@ def _reset_password(user_email):
 		if reset_password_obtained.token == token_received:
 			if reset_password_obtained.is_token_expired():
 				logger.debug('Token is expired')
-				result = {'Error' : 'token expired'}
+				result = {'Error' : 'token expired. Already sent new one'}
 				status_code = HTTPStatus.UNAUTHORIZED
+				_forgot_password(user_email)
 			else:
 				logger.debug('Valid token')
 				user_persistence = UserPersistence(current_app.db)
