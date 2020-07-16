@@ -260,7 +260,8 @@ def _forgot_password(user_email):
 
 	return result, status_code
 
-@authentication_bp.route('/api/reset_password/', methods=['GET'])
+@authentication_bp.route('/api/users/<user_email>/password', methods=['PUT'])
+@app_server_token_required
 @swag_from('docs/reset_password.yml')
-def _reset_password():
-	return {}
+def _reset_password(user_email):
+	return {'Reset password' : 'password updated for user {0}'.format(user_email)}
