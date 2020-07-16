@@ -6,6 +6,7 @@ from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBl
 from auth_server.exceptions.user_already_unblocked_exception import UserlAlreadyUnblockedException
 from auth_server.model.user import User
 from auth_server.persistence.user_persistence import UserPersistence
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
 
 ####### FUNCS ########
 def create_all(conn):
@@ -160,3 +161,14 @@ def test_cant_change_password_for_non_existent_user(postgresql_db):
 
   with pytest.raises(UserNotFoundException):
     sut.change_password_for_user('testing@test.com', 'password')
+
+def test_cant_change_password_for_firebase_user(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_firebase_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  with pytest.raises(CantChangePasswordForFirebaseUser):
+    sut.change_password_for_user('testg@test.com', 'password')
