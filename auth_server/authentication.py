@@ -20,7 +20,11 @@ from auth_server.exceptions.user_not_found_exception import UserNotFoundExceptio
 from auth_server.model.user import User
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
 from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
-
+from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
+from auth_server.model.reset_password import ResetPassword
+from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
+from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
+from auth_server.utilities.mail_functions import send_email_with_reset_password_token
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -97,36 +101,6 @@ def _register_admin_user():
 
 	return result, status_code
 
-## La realidad es que no importa la red social lo que verificamos es el token de firebase.
-## Por ahora lo dejo por si se me esta pasando algo, pero eventualmente vamos a borrar este endpoint
-
-# @authentication_bp.route('/api/register_with_google/', methods=['POST'])
-# @swag_from('docs/register_with_google.yml')
-# def _register_user_using_google():
-# 	try:
-# 		id_token = get_token_id_from_request()
-# 		# En claims se almacena mas informacion de usuario como mail, y datos personales
-# 		claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
-# 		#Si firebase no reconoce el token
-# 		if not claims:
-# 			logger.debug('Token incorrecto')
-# 			result = {'Register': 'invalid firebase token'}
-# 			status_code = 401
-# 		else:
-# 			#TODO: insert into users db no esta preparada para recibir claims.
-# 			#TODO: hacer funcion previa que prepara la data.
-# 			logger.debug('Valid token')
-# 			result = {'Register': 'valid firebase token'}
-# 			status_code = 200
-# 			# with current_app.app_context():
-# 			# 	result, status_code = insert_into_users_db(current_app.client, claims)
-# 			# logger.debug('User was inserted')
-# 		return result, status_code
-# 	except ValueError as exc:
-# 		result = {'Register': 'Error'}
-# 		status_code = 401
-# 		logger.error(exc)
-# 		return result, status_code
 
 ### Login methods ###
 
@@ -151,23 +125,6 @@ def _login_user():
 				result = {'Login': 'invalid user or password'}
 				status_code = 401
 	return result, status_code
-	# para cuando nos llegue la request desde Androide
-	# user_request = request.headers['AuthenticationHeader']
-	# auth = HTTPBasicAuth('taller', 'notanseguro')
-	# auth_login = '/api/login/'
-	# response_auth_server = get_auth_server_login(os.environ.get('AUTH_SERVER_URL') +
-	# 											 auth_login, auth)
-	# if response_auth_server.status_code == 200:
-	# 	# app.logger.debug('Response from auth server login is 200')
-	# 	response = {'Successful login'}
-	# 	response.status_code = 200
-	# else:
-	# 	# app.logger.debug('Response from auth server login is {0}'.
-	# 	#                  format(response_auth_server.status_code))
-	# 	response = {'Login failed'}
-	# 	response.status_code = 401
-	# current_app.logger.debug('Login was successful since it does anything at all')
-	# return {'Login': 'was successful'}
 
 @authentication_bp.route('/api/login_with_firebase/', methods=['POST'])
 @app_server_token_required
@@ -217,37 +174,6 @@ def _login_user_using_firebase():
 		logger.error(invalid_token_error)
 		return result, status_code
 
-
-## Misma historia que mas arriba.
-## El login de firebase seria general, no necesitamos determinar la red social.
-
-# @authentication_bp.route('/api/login_with_google/', methods=['GET'])
-# @swag_from('docs/login_with_google.yml')
-# def _login_user_using_google():
-# 	try:
-# 		id_token = get_token_id_from_request()
-# 		# En claims se almacena mas informacion de usuario como mail, y datos personales
-# 		claims = google.oauth2.id_token.verify_firebase_token(id_token, HTTP_REQUEST)
-# 		#Si google no reconoce el token
-# 		if not claims:
-# 			logger.debug('Token incorrecto')
-# 			result = {'Login': 'invalid firebase token'}
-# 			status_code = 401
-# 		else:
-# 			result, status_code, user = get_user(current_app.client, claims.get('email'))
-# 			logger.debug('Usuario logueado con exito via Google')
-# 			token = generate_auth_token(claims)
-# 			logger.debug('This is the token {0}'.format(token))
-# 			result = {'Token': token}
-# 			status_code = 200
-# 		return result, status_code
-# 	except ValueError as exc:
-# 		result = {'Login': 'Error'}
-# 		status_code = 401
-# 		logger.error(exc)
-# 		return result, status_code
-
-
 ### Validating token methods ####
 
 @authentication_bp.route('/api/validate_token/', methods=['GET'])
@@ -260,10 +186,79 @@ def _validate_token():
 
 #### Updating methods ###
 
-@authentication_bp.route('/api/forgot_password/', methods=['GET'])
+@authentication_bp.route('/api/users/<user_email>/reset_password_token', methods=['POST'])
+@app_server_token_required
 @swag_from('docs/forgot_password.yml')
-def _forgot_password():
-	return {}
+# pylint: disable=R0915
+def _forgot_password(user_email):
+
+	logger.debug('Forgot password request from user:{0}'.format(user_email))
+
+	try:
+		user_persistence = UserPersistence(current_app.db)
+		user = user_persistence.get_user_by_email(user_email)
+
+		if user.is_firebase_user():
+			result = {"Error" : "user {0} is a firebase user".format(user_email)}
+			status_code = HTTPStatus.PRECONDITION_FAILED
+			logger.debug('User is firebase user. Cant change password')
+		else:
+			reset_password_persistence = ResetPasswordPersistence(current_app.db)
+			try:
+				# Ya teniamos un codigo para resetear la pass de este usuario
+				# Si esta vencido le damos uno nuevo y sino le mandamos el mismo
+				reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
+				logger.debug('User already has reset password')
+				if reset_password_obtained.is_token_expired():
+					try:
+						logger.debug('Token expired. Regenerating new one')
+						reset_password_persistence.delete(user_email)
+						reset_password_updated = ResetPassword(user_email)
+						reset_password_persistence.save(reset_password_updated)
+
+						send_email_with_reset_password_token(user_email, reset_password_updated.token)
+
+						result = {"Forgot password" : "email sent to {0}".format(user_email)}
+						status_code = HTTPStatus.OK
+						logger.debug('Email sent to user:{0}'.format(user_email))
+					except ResetPasswordNotFoundException:
+						logger.critical('Trying to delete non existent reset password')
+						result = {"Error" : "couldnt update token for user {0}".format(user_email)}
+						status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+					except ResetPasswordForNonExistentUserException:
+						logger.critical('Trying to generate reset password for inexistent user in Users table. Super critical!')
+						result = {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+						status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+				else:
+					logger.debug('Token is still valid. Sending email again')
+					send_email_with_reset_password_token(user_email, reset_password_obtained.token)
+					result = {"Forgot password" : "email sent to {0}".format(user_email)}
+					status_code = HTTPStatus.OK
+					logger.debug('Email sent to user:{0}'.format(user_email))
+			except ResetPasswordNotFoundException:
+				# No tenemos un codigo activo para resetear la pass de este user
+				# Creamos uno
+				logger.debug('User hasnt reset password. Lets create one')
+				try:
+					reset_password_to_save = ResetPassword(user_email)
+					reset_password_persistence.save(reset_password_to_save)
+
+					result = {"Forgot password" : "email sent to {0}".format(user_email)}
+					status_code = HTTPStatus.OK
+
+					send_email_with_reset_password_token(user_email, reset_password_to_save.token)
+
+					logger.debug('Email sent to user:{0}'.format(user_email))
+				except ResetPasswordForNonExistentUserException:
+					logger.critical('Trying to generate reset password for inexistent user in Users table!')
+					result = {"Error" : "user {0} doesnt exist in table users".format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+	except UserNotFoundException:
+		result = {"Error" : "user {0} doesnt exist".format(user_email)}
+		status_code = HTTPStatus.NOT_FOUND
+		logger.debug('User doesnt exist')
+
+	return result, status_code
 
 @authentication_bp.route('/api/reset_password/', methods=['GET'])
 @swag_from('docs/reset_password.yml')

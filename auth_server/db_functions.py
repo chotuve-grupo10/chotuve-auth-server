@@ -26,11 +26,19 @@ create_app_servers_table_command = """CREATE TABLE AppServers (
 						token VARCHAR(255) PRIMARY KEY ,
 						registered_at timestamp NOT NULL);"""
 
+create_reset_password_table_command = """CREATE TABLE ResetPassword (
+						token VARCHAR(6) NOT NULL,
+						email VARCHAR(255),
+						registered_at timestamp NOT NULL,
+						PRIMARY KEY (email),
+    					FOREIGN KEY (email) REFERENCES Users(email));"""
+
 logger = logging.getLogger('gunicorn.error')
 
 def initialize_db():
 	initialize_users_table()
 	initialize_app_servers_table()
+	initialize_reset_password_table()
 
 def initialize_users_table():
 	client = current_app.client
@@ -63,6 +71,22 @@ def initialize_app_servers_table():
 			logger.error('Error {e} creating AppServers table. Could not be created'.format(e=e))
 	else:
 		logger.debug('Table AppServers already exists')
+
+def initialize_reset_password_table():
+	client = current_app.client
+	if not table_exists(client, "ResetPassword"):
+		cursor = client.cursor()
+		try:
+			cursor.execute(create_reset_password_table_command)
+			client.commit()
+			cursor.close()
+			logger.debug('Table ResetPasword was created successfully')
+		except Exception as e:
+			client.rollback()
+			cursor.close()
+			logger.error('Error {e} creating ResetPassword table. Could not be created'.format(e=e))
+	else:
+		logger.debug('Table ResetPassword already exists')
 
 
 def table_exists(client, table_name):

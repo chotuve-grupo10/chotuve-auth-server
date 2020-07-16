@@ -4,6 +4,7 @@ from urllib.parse import urlparse
 import psycopg2 as psql
 from psycopg2 import errors as psql_errors
 from flask import Flask, request
+from flask_mail import Mail
 from flasgger import Swagger
 from flasgger import swag_from
 from flask_cors import CORS
@@ -15,12 +16,22 @@ from auth_server.app_servers import app_servers_bp
 from auth_server.db_functions import initialize_db
 from auth_server.token_functions import *
 
+mail = Mail()
+
 def create_app(test_config=None, db_connection=None):
 	# create and configure the app
 	app = Flask(__name__, instance_relative_config=True)
 
 	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	app.config["MAIL_SERVER"] = 'smtp.gmail.com'
+	app.config["MAIL_PORT"] = 465
+	app.config["MAIL_USE_SSL"] = True
+	app.config["MAIL_DEFAULT_SENDER"] = "chotuve.g10@gmail.com"
+	app.config["MAIL_USERNAME"] = "chotuve.g10@gmail.com"
+	app.config["MAIL_PASSWORD"] = "falopa123"
+
+	mail.init_app(app)
 	app.db = db_connection or SQLAlchemy(app)
 
 	parameters = urlparse(os.environ.get('DATABASE_URL'))
