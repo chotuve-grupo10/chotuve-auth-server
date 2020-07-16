@@ -426,3 +426,35 @@ def test_forgot_password_with_existent_reset_password_and_expired_token_successf
 														headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 							assert json.loads(response.data) == {"Forgot password" : "email sent to {0}".format(user_email)}
+
+
+def test_reset_password_fails_user_didnt_request_to_reset_password(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(ResetPasswordPersistence,'get_reset_password_by_email', new=raise_reset_password_not_found_exception) as reset_password_not_found_mock:
+
+			user_email = 'test@test.com'
+			body = {'new_password': 'my new password', 'token': '123456'}
+			response = client.put('/api/users/' + user_email + '/password', json=body,
+										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+			assert json.loads(response.data) == {'Error' : 'user {0} didnt request to reset password'.format(user_email)}
+
+
+def test_reset_password_fails_token_doesnt_match(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as get_reset_password_mock:
+
+			user_email = 'test@test.com'
+			get_reset_password_mock.return_value = ResetPassword(user_email)
+
+			body = {'new_password': 'my new password', 'token': '123456'}
+			response = client.put('/api/users/' + user_email + '/password', json=body,
+										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+			assert json.loads(response.data) == {'Error' : 'token is NOT correct'.format(user_email)}

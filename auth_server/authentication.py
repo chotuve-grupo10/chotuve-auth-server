@@ -264,4 +264,25 @@ def _forgot_password(user_email):
 @app_server_token_required
 @swag_from('docs/reset_password.yml')
 def _reset_password(user_email):
-	return {'Reset password' : 'password updated for user {0}'.format(user_email)}
+
+	logger.debug('Reset password request from user:{0}'.format(user_email))
+
+	data = request.json
+	token_received = data['token']
+
+	reset_password_persistence = ResetPasswordPersistence(current_app.db)
+	try:
+		reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
+		if reset_password_obtained.token == token_received:
+			result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
+			status_code = HTTPStatus.OK
+		else:
+			logger.debug('The token {0} is NOT correct'.format(token_received))
+			result = {'Error' : 'token is NOT correct'.format(user_email)}
+			status_code = HTTPStatus.NOT_FOUND
+	except ResetPasswordNotFoundException:
+		logger.debug('This user didnt request to reset password')
+		result = {'Error' : 'user {0} didnt request to reset password'.format(user_email)}
+		status_code = HTTPStatus.NOT_FOUND
+
+	return result, status_code
