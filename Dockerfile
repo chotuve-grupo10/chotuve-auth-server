@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.8.3
 COPY requirements.txt .
 COPY setup.py .
 RUN apt-get update && apt-get install -y python3-pip python3-dev
