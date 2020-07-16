@@ -10,6 +10,7 @@ from auth_server.exceptions.reset_password_not_found_exception import ResetPassw
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 from auth_server.persistence.reset_password_persistence import ResetPasswordPersistence
 from auth_server.model.reset_password import ResetPassword
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
 
 ####### FUNCS ##########
 
@@ -18,6 +19,9 @@ def raise_reset_password_not_found_exception(cls, *args, **kwargs):
 
 def raise_reset_password_for_non_existent_user_exception(cls, *args, **kwargs):
 	raise ResetPasswordForNonExistentUserException
+
+def raise_cant_change_password_for_firebase_user_exception(cls, *args, **kwargs):
+	raise CantChangePasswordForFirebaseUser
 
 ####### TESTS ###############
 
@@ -480,3 +484,50 @@ def test_reset_password_fails_token_is_expired(client):
 											headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
 				assert json.loads(response.data) == {'Error' : 'token expired'}
+
+def test_reset_password_fails_trying_change_password_for_firebase_user_should_never_happen(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as get_reset_password_mock:
+
+			user_email = 'test@test.com'
+			reset_password = ResetPassword(user_email)
+			get_reset_password_mock.return_value = reset_password
+
+			with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+				is_token_expired_mock.return_value = False
+
+				with patch.object(UserPersistence,'change_password_for_user', new=raise_cant_change_password_for_firebase_user_exception) as reset_password_not_found_mock:
+
+					body = {'new_password': 'my new password', 'token': reset_password.token}
+					response = client.put('/api/users/' + user_email + '/password', json=body,
+												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+					assert json.loads(response.data) == {'Error' : 'user {0} is a firebase user'.format(user_email)}
+
+
+def test_reset_password_fails_user_not_found_should_never_happen(client):
+
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock_is_valid_token_from_app_server:
+		mock_is_valid_token_from_app_server.return_value = True
+
+		with patch.object(ResetPasswordPersistence,'get_reset_password_by_email') as get_reset_password_mock:
+
+			user_email = 'test@test.com'
+			reset_password = ResetPassword(user_email)
+			get_reset_password_mock.return_value = reset_password
+
+			with patch.object(ResetPassword,'is_token_expired') as is_token_expired_mock:
+
+				is_token_expired_mock.return_value = False
+
+				with patch.object(UserPersistence,'change_password_for_user', new=raise_not_found_exception) as reset_password_not_found_mock:
+
+					body = {'new_password': 'my new password', 'token': reset_password.token}
+					response = client.put('/api/users/' + user_email + '/password', json=body,
+												headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
+
+					assert json.loads(response.data) == {'Error' : 'user {0} doesnt exist'.format(user_email)}

@@ -25,6 +25,7 @@ from auth_server.model.reset_password import ResetPassword
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 from auth_server.utilities.mail_functions import send_email_with_reset_password_token
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -269,6 +270,7 @@ def _reset_password(user_email):
 
 	data = request.json
 	token_received = data['token']
+	password_received = data['new_password']
 
 	reset_password_persistence = ResetPasswordPersistence(current_app.db)
 	try:
@@ -280,8 +282,21 @@ def _reset_password(user_email):
 				status_code = HTTPStatus.UNAUTHORIZED
 			else:
 				logger.debug('Valid token')
-				result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
-				status_code = HTTPStatus.OK
+				user_persistence = UserPersistence(current_app.db)
+
+				try:
+					user_persistence.change_password_for_user(user_email, password_received)
+					result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
+					status_code = HTTPStatus.OK
+					logger.debug('Password updated')
+				except CantChangePasswordForFirebaseUser:
+					logger.critical('Trying to change password for firebase user!')
+					result = {'Error' : 'user {0} is a firebase user'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+				except UserNotFoundException:
+					logger.critical('Cant find user!')
+					result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
 		else:
 			logger.debug('The token {0} is NOT correct'.format(token_received))
 			result = {'Error' : 'token is NOT correct'}
