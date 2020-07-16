@@ -25,6 +25,7 @@ from auth_server.model.reset_password import ResetPassword
 from auth_server.exceptions.reset_password_not_found_exception import ResetPasswordNotFoundException
 from auth_server.exceptions.reset_password_for_non_existent_user_exception import ResetPasswordForNonExistentUserException
 from auth_server.utilities.mail_functions import send_email_with_reset_password_token
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
 # Use the App Engine Requests adapter. This makes sure that Requests uses
 # URLFetch.
 HTTP_REQUEST = google.auth.transport.requests.Request()
@@ -260,7 +261,55 @@ def _forgot_password(user_email):
 
 	return result, status_code
 
-@authentication_bp.route('/api/reset_password/', methods=['GET'])
+@authentication_bp.route('/api/users/<user_email>/password', methods=['PUT'])
+@app_server_token_required
 @swag_from('docs/reset_password.yml')
-def _reset_password():
-	return {}
+def _reset_password(user_email):
+
+	logger.debug('Reset password request from user:{0}'.format(user_email))
+
+	data = request.json
+	token_received = data['token']
+	password_received = data['new_password']
+
+	reset_password_persistence = ResetPasswordPersistence(current_app.db)
+	try:
+		reset_password_obtained = reset_password_persistence.get_reset_password_by_email(user_email)
+		if reset_password_obtained.token == token_received:
+			if reset_password_obtained.is_token_expired():
+				logger.debug('Token is expired')
+				result = {'Error' : 'token expired. Already sent new one'}
+				status_code = HTTPStatus.UNAUTHORIZED
+				_forgot_password(user_email)
+			else:
+				logger.debug('Valid token')
+				user_persistence = UserPersistence(current_app.db)
+
+				try:
+					user_persistence.change_password_for_user(user_email, password_received)
+					reset_password_persistence.delete(user_email)
+					result = {'Reset password' : 'password updated for user {0}'.format(user_email)}
+					status_code = HTTPStatus.OK
+					logger.debug('Password updated')
+				except CantChangePasswordForFirebaseUser:
+					logger.critical('Trying to change password for firebase user!')
+					result = {'Error' : 'user {0} is a firebase user'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+				except UserNotFoundException:
+					logger.critical('Cant find user!')
+					result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+				except ResetPasswordNotFoundException:
+					logger.critical('Cant reset password to delete!')
+					result = {'Error' : 'cant delete reset password request for user {0}'.format(user_email)}
+					status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+		else:
+			logger.debug('The token {0} is NOT correct'.format(token_received))
+			result = {'Error' : 'token is NOT correct'}
+			status_code = HTTPStatus.NOT_FOUND
+	except ResetPasswordNotFoundException:
+		logger.debug('This user didnt request to reset password')
+		result = {'Error' : 'user {0} didnt request to reset password'.format(user_email)}
+		status_code = HTTPStatus.NOT_FOUND
+
+	return result, status_code

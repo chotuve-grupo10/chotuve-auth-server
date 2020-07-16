@@ -6,6 +6,28 @@ from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBl
 from auth_server.exceptions.user_already_unblocked_exception import UserlAlreadyUnblockedException
 from auth_server.model.user import User
 from auth_server.persistence.user_persistence import UserPersistence
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
+
+####### FUNCS ########
+def create_all(conn):
+  migrations = db.migrations.all_migrations()
+  for migration in migrations:
+    conn.execute(migration)
+
+def query_first_user(conn):
+    return conn.execute("SELECT email, full_name, phone_number FROM users").fetchone()
+
+def insert_test_user(conn):
+    conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
+						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
+            '444-4444', null, 'xxxxx', 'xxxxx', '0', '0', '0')""")
+
+def insert_firebase_test_user(conn):
+    conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
+						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
+            '444-4444', null, 'xxxxx', 'xxxxx', '1', '0', '0')""")
+
+############ TESTS ##############
 
 def test_save_password_user(postgresql_db):
   session = postgresql_db.session
@@ -129,15 +151,40 @@ def test_retrieve_inexistent_user(postgresql_db):
   with pytest.raises(UserNotFoundException):
     user = sut.get_user_by_email('aa@gmail.com')
 
-def create_all(conn):
-  migrations = db.migrations.all_migrations()
-  for migration in migrations:
-    conn.execute(migration)
+def test_cant_change_password_for_non_existent_user(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
 
-def query_first_user(conn):
-    return conn.execute("SELECT email, full_name, phone_number FROM users").fetchone()
+  with pytest.raises(UserNotFoundException):
+    sut.change_password_for_user('testing@test.com', 'password')
 
-def insert_test_user(conn):
-    conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
-						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
-            '444-4444', null, 'xxxxx', 'xxxxx', '0', '0', '0')""")
+def test_cant_change_password_for_firebase_user(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_firebase_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  with pytest.raises(CantChangePasswordForFirebaseUser):
+    sut.change_password_for_user('test@test.com', 'password')
+
+def test_change_password_successfully(postgresql_db):
+  session = postgresql_db.session
+  create_all(session)
+  insert_test_user(session)
+  sut = UserPersistence(postgresql_db)
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  old_hash = user.hash
+
+  sut.change_password_for_user('test@test.com', 'password')
+  user = sut.get_user_by_email('test@test.com')
+  assert user.email == 'test@test.com'
+
+  assert not user.hash ==  old_hash

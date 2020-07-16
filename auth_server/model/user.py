@@ -2,6 +2,7 @@ import hashlib
 from auth_server.random_string import *
 from sqlalchemy import Column, Integer, String
 from auth_server.model.base import Base
+from auth_server.exceptions.cant_change_password_for_firebase_user_exception import CantChangePasswordForFirebaseUser
 
 class User(Base):
   __tablename__ = 'users'
@@ -38,6 +39,15 @@ class User(Base):
 
   def is_blocked_user(self):
     return self.blocked_user == '1'
+
+  def change_password(self, new_password):
+    if self.is_firebase_user():
+      raise CantChangePasswordForFirebaseUser
+
+    sal = random_string(6)
+    pimienta = random_string(1)
+    self.hash = hashlib.sha512((new_password + sal + pimienta).encode('utf-8')).hexdigest()
+    self.salt = sal
 
   def __repr__(self):
     return """<User email={0} full_name={1} phone_number={2} profile_picture={3}

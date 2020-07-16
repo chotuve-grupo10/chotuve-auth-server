@@ -1,0 +1,2 @@
+class CantChangePasswordForFirebaseUser(Exception):
+  pass
