@@ -171,4 +171,4 @@ def test_cant_change_password_for_firebase_user(postgresql_db):
   assert user.email == 'test@test.com'
 
   with pytest.raises(CantChangePasswordForFirebaseUser):
-    sut.change_password_for_user('testg@test.com', 'password')
+    sut.change_password_for_user('test@test.com', 'password')
