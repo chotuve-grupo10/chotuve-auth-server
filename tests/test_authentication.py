@@ -457,4 +457,4 @@ def test_reset_password_fails_token_doesnt_match(client):
 			response = client.put('/api/users/' + user_email + '/password', json=body,
 										headers={'authorization': 'FAKETOKEN', APP_SERVER_TOKEN_HEADER: 'FAKETOKEN'}, follow_redirects=False)
 
-			assert json.loads(response.data) == {'Error' : 'token is NOT correct'.format(user_email)}
+			assert json.loads(response.data) == {'Error' : 'token is NOT correct'}

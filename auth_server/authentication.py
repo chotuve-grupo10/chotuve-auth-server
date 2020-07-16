@@ -278,7 +278,7 @@ def _reset_password(user_email):
 			status_code = HTTPStatus.OK
 		else:
 			logger.debug('The token {0} is NOT correct'.format(token_received))
-			result = {'Error' : 'token is NOT correct'.format(user_email)}
+			result = {'Error' : 'token is NOT correct'}
 			status_code = HTTPStatus.NOT_FOUND
 	except ResetPasswordNotFoundException:
 		logger.debug('This user didnt request to reset password')
