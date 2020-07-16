@@ -21,6 +21,11 @@ def insert_test_user(conn):
 						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
             '444-4444', null, 'xxxxx', 'xxxxx', '0', '0', '0')""")
 
+def insert_firebase_test_user(conn):
+    conn.execute("""INSERT INTO users (email, full_name, phone_number, profile_picture,
+						hash, salt, firebase_user, admin_user, blocked_user) VALUES ('test@test.com', 'Test User',
+            '444-4444', null, 'xxxxx', 'xxxxx', '1', '0', '0')""")
+
 ############ TESTS ##############
 
 def test_save_password_user(postgresql_db):
@@ -154,4 +159,4 @@ def test_cant_change_password_for_non_existent_user(postgresql_db):
   assert user.email == 'test@test.com'
 
   with pytest.raises(UserNotFoundException):
-    sut.change_password_for_user('testing@test.com')
+    sut.change_password_for_user('testing@test.com', 'password')
