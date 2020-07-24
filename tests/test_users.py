@@ -3,6 +3,7 @@ import pytest
 from unittest.mock import patch
 import simplejson as json
 from auth_server.persistence.user_persistence import UserPersistence
+from auth_server.model.user import User
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
 
@@ -262,6 +263,28 @@ def test_cant_get_user_profile_because_user_doesnt_exist(client):
 			response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
 			value_expected = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+
+			assert mock.called
+			assert json.loads(response.data) == value_expected
+
+def test_get_user_profile_successfully(client):
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock:
+
+		mock.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email') as get_user_mock:
+
+			get_user_mock.return_value = User('test@test.com', 'secreto', 'Test', '1234', 'test.jpg', False, False, False)
+
+			user_email = 'test@test.com'
+			hed = {'AppServerToken': 'FAKETOKEN'}
+
+			response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+			value_expected = {'email': 'test@test.com',
+								'full name': 'Test',
+								'phone number': '1234',
+								'profile picture' : 'test.jpg'}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected

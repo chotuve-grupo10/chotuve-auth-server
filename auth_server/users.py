@@ -95,8 +95,9 @@ def _get_user_profile(user_email):
 
 	try:
 		user = user_persistence.get_user_by_email(user_email)
-		status = ''
+		result = user.serialize()
 		status_code = 200
+		logger.debug('User profile found')
 	except UserNotFoundException:
 		logger.debug('User doesnt exist')
 		result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
