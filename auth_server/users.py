@@ -8,6 +8,7 @@ from flasgger import swag_from
 from auth_server.validation_functions import *
 from auth_server.db_functions import *
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
+from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
 from auth_server.persistence.user_persistence import UserPersistence
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
@@ -80,5 +81,26 @@ def _get_users():
 		except Exception as exc:
 			result = {'Error' : str(exc)}
 			status_code = 500
+
+	return result, status_code
+
+@users_bp.route('/api/users/<user_email>', methods=['GET'])
+@app_server_token_required
+@swag_from('docs/get_user_profile.yml')
+def _get_user_profile(user_email):
+
+	logger.debug('Requested {0} profile'.format(user_email))
+
+	user_persistence = UserPersistence(current_app.db)
+
+	try:
+		user = user_persistence.get_user_by_email(user_email)
+		result = user.serialize()
+		status_code = 200
+		logger.debug('User profile found')
+	except UserNotFoundException:
+		logger.debug('User doesnt exist')
+		result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+		status_code = 404
 
 	return result, status_code
