@@ -248,3 +248,21 @@ def test_cant_get_user_profile_invalid_app_server_token(client):
 
 		assert mock.called
 		assert json.loads(response.data) == value_expected
+
+def test_cant_get_user_profile_because_user_doesnt_exist(client):
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock:
+
+		mock.return_value = True
+
+		with patch.object(UserPersistence,'get_user_by_email', new=raise_user_not_found_exception) as get_user_mock:
+
+			user_email = 'test@test.com'
+			hed = {'AppServerToken': 'FAKETOKEN'}
+
+			response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+			value_expected = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+
+			assert mock.called
+			assert json.loads(response.data) == value_expected
+

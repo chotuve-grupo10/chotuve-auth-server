@@ -88,4 +88,18 @@ def _get_users():
 @app_server_token_required
 @swag_from('docs/get_user_profile.yml')
 def _get_user_profile(user_email):
-	return {'Profile' : 'perfil de {0}'.format(user_email)}
+
+	logger.debug('Requested {0} profile'.format(user_email))
+
+	user_persistence = UserPersistence(current_app.db)
+
+	try:
+		user = user_persistence.get_user_by_email(user_email)
+		status = ''
+		status_code = 200
+	except UserNotFoundException:
+		logger.debug('User doesnt exist')
+		result = {'Error' : 'user {0} doesnt exist'.format(user_email)}
+		status_code = 404
+
+	return result, status_code
