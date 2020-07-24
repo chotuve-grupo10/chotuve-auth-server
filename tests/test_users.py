@@ -222,3 +222,29 @@ def test_get_users_successfully(client):
 			assert mock.called
 			assert mock_get_all_users.called
 			assert json.loads(response.data) == json.loads(value_expected)
+
+def test_cant_get_user_profile_app_server_token_not_provided(client):
+
+	user_email = 'test@test.com'
+	hed = {}
+
+	response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+	value_expected = {'Error' : 'Missing app server token (AppServerToken)'}
+	assert json.loads(response.data) == value_expected
+
+def test_cant_get_user_profile_invalid_app_server_token(client):
+	with patch('auth_server.decorators.app_server_token_required_decorator.is_valid_token_from_app_server') as mock:
+
+		user_email = 'test@test.com'
+
+		mock.return_value = False
+
+		hed = {'AppServerToken': 'FAKETOKEN'}
+
+		response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+		value_expected = {'Error' : 'App server token NOT valid'}
+
+		assert mock.called
+		assert json.loads(response.data) == value_expected
