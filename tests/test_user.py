@@ -38,3 +38,13 @@ def test_change_password_successfully():
 	user.change_password('password')
 
 	assert not user.hash == old_hash
+
+def test_serialize_user_successfully():
+	user = User('test@test.com', 'secreto', 'Test', '1234', 'test.jpg', False, False, False)
+
+	serialized_user = user.serialize()
+
+	assert serialized_user == {'email': 'test@test.com',
+	 'full name': 'Test',
+	 'phone number': '1234',
+	 'profile picture' : 'test.jpg'}
