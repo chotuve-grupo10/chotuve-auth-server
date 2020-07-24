@@ -1,12 +1,5 @@
 Este servicio permitirá consultar el perfil de un usuario
 ---
-definitions:
-  ForgotPasswordSuccessfulResponse:
-    type: object
-    properties:
-      Forgot password:
-        type: string
-        example: email sent to some@some.com
 tags:
   - name: All users
 parameters:
