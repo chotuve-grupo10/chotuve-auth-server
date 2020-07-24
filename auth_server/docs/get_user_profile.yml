@@ -1,0 +1,39 @@
+Este servicio permitirá consultar el perfil de un usuario
+---
+definitions:
+  ForgotPasswordSuccessfulResponse:
+    type: object
+    properties:
+      Forgot password:
+        type: string
+        example: email sent to some@some.com
+tags:
+  - name: All users
+parameters:
+  - in: header
+    name: AppServerToken
+    type: string
+    required: true
+  - in: path
+    name: user_email
+    description: User's email
+    required: true
+    schema:
+        type: string
+responses:
+  200:
+    description: user profile.
+    schema:
+      $ref: '#/definitions/ListedUser'
+  403:
+    description: invalid app server token.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  404:
+    description: user doesnt exist.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  500:
+    description: there is an internal problem with the auth server.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
