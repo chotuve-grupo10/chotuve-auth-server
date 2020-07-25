@@ -25,7 +25,11 @@ parameters:
     name: authorization
     description: token
     type: string
-    required: true
+    required: false
+  - in: header
+    name: AppServerToken
+    type: string
+    required: false
   - in: path
     name: user_email
     description: User's email
@@ -39,7 +43,7 @@ parameters:
 responses:
   200:
     description: user modified.
-  401:
+  403:
     description: you dont have the necessary permissions to modify a user or your token is invalid.
   500:
     description: there is an internal problem with the auth server.

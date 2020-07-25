@@ -113,87 +113,99 @@ def test_delete_user_successfully(client):
 				assert user_persistence.called
 				assert json.loads(response.data) == value_expected
 
-def test_cant_modify_user_request_doesnt_come_from_admin_user_or_same_user(client):
-	with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.is_request_from_admin_user') as mock:
+def test_cant_modify_no_headers(client):
+
+	user_email = 'test@test.com'
+
+	response = client.put('/api/users/' + user_email, follow_redirects=False)
+
+	value_expected = {'Error' : 'Missing authorization or app server token'}
+
+	assert json.loads(response.data) == value_expected
+
+def test_cant_modify_user_request_doesnt_come_from_admin_user(client):
+	with patch('auth_server.decorators.admin_user_or_app_server_token_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
 		mock.return_value = False
 
-		with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.get_user_with_token') as mock_user_from_token:
+		hed = {'authorization': 'FAKETOKEN'}
 
-			other_email = 'test2@test2.com'
+		response = client.put('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
-			mock_user_from_token.return_value = other_email
-		
-			hed = {'authorization': 'FAKETOKEN'}
+		value_expected = {'Error' : 'Request doesnt come from admin user'}
 
-			response = client.put('/api/users/' + user_email, headers=hed, follow_redirects=False)
+		assert mock.called
+		assert json.loads(response.data) == value_expected
 
-			value_expected = {'Error': 'Request not authorized to modify user data'}
+def test_cant_modify_user_invalid_app_server_token(client):
+	with patch('auth_server.decorators.admin_user_or_app_server_token_decorator.is_valid_token_from_app_server') as mock:
 
-			assert mock.called
-			assert json.loads(response.data) == value_expected
+		user_email = 'test@test.com'
+
+		mock.return_value = False
+
+		hed = {'AppServerToken': 'FAKETOKEN'}
+
+		response = client.put('/api/users/' + user_email, headers=hed, follow_redirects=False)
+
+		value_expected = {'Error' : 'App server token NOT valid'}
+
+		assert mock.called
+		assert json.loads(response.data) == value_expected
 
 def test_modify_user_from_admin_user_successfully(client):
-	with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.is_request_from_admin_user') as mock:
+	with patch('auth_server.decorators.admin_user_or_app_server_token_decorator.is_request_from_admin_user') as mock:
 
 		user_email = 'test@test.com'
 
 		mock.return_value = True
-		with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.get_user_with_token') as mock_user_from_token:
 
-			admin_user_email = 'admin@test.com'
-			
-			mock_user_from_token.return_value = admin_user_email
+		with patch('auth_server.users.modify_user_from_db') as mock_modify_user:
 
-			with patch('auth_server.users.modify_user_from_db') as mock_modify_user:
+			hed = {'authorization': 'TOKEN'}
 
-				hed = {'authorization': 'TOKEN'}
+			user_information = {'email': 'test@test.com',
+				'password': 'fake password',
+				'full name': 'full name',
+				'phone number': 'phone number', 'profile picture': 'profile picture'}
 
-				user_information = {'email': 'test@test.com',
-					'password': 'fake password',
-					'full name': 'full name',
-					'phone number': 'phone number', 'profile picture': 'profile picture'}
+			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
 
-				mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
+			response = client.put('/api/users/' + user_email, json=user_information, headers=hed, follow_redirects=False)
 
-				response = client.put('/api/users/' + user_email, json=user_information, headers=hed, follow_redirects=False)
+			value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
 
-				value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
+			assert mock.called
+			assert mock_modify_user.called
+			assert json.loads(response.data) == value_expected
 
-				assert mock.called
-				assert mock_modify_user.called
-				assert json.loads(response.data) == value_expected
-
-def test_modify_user_from_same_user_successfully(client):
-	with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.is_request_from_admin_user') as mock:
+def test_modify_user_with_app_server_token_successfully(client):
+	with patch('auth_server.decorators.admin_user_or_app_server_token_decorator.is_valid_token_from_app_server') as mock:
 
 		user_email = 'test@test.com'
 
-		mock.return_value = False
-		with patch('auth_server.decorators.admin_user_or_is_same_user_required_decorator.get_user_with_token') as mock_user_from_token:
+		mock.return_value = True
 
-			mock_user_from_token.return_value = user_email
+		with patch('auth_server.users.modify_user_from_db') as mock_modify_user:
 
-			with patch('auth_server.users.modify_user_from_db') as mock_modify_user:
+			hed = {'AppServerToken': 'TOKEN'}
 
-				hed = {'authorization': 'TOKEN'}
+			user_information = {'email': 'test@test.com',
+				'password': 'fake password',
+				'full name': 'full name',
+				'phone number': 'phone number', 'profile picture': 'profile picture'}
 
-				user_information = {'email': 'test@test.com',
-					'password': 'fake password',
-					'full name': 'full name',
-					'phone number': 'phone number', 'profile picture': 'profile picture'}
+			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
 
-				mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
+			response = client.put('/api/users/' + user_email, json=user_information, headers=hed, follow_redirects=False)
 
-				response = client.put('/api/users/' + user_email, json=user_information, headers=hed, follow_redirects=False)
+			value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
 
-				value_expected = {'Modify':'successfully modified user with email {0}'.format(user_email)}
-
-				assert mock.called
-				assert mock_modify_user.called
-				assert json.loads(response.data) == value_expected
+			assert mock.called
+			assert mock_modify_user.called
+			assert json.loads(response.data) == value_expected
 
 def test_cant_get_users_request_doesnt_come_from_admin_user(client):
 	with patch('auth_server.decorators.admin_user_required_decorator.is_request_from_admin_user') as mock:
