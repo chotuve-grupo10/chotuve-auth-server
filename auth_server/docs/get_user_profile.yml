@@ -1,5 +1,17 @@
 Este servicio permitirá consultar el perfil de un usuario
 ---
+definitions:
+  ListedUserForAndroidClient:
+    type: object
+    properties:
+      email:
+        type: string
+      full_name:
+        type: string
+      phone_number:
+        type: string
+      profile_picture:
+        type: string
 tags:
   - name: All users
 parameters:
@@ -17,7 +29,7 @@ responses:
   200:
     description: user profile.
     schema:
-      $ref: '#/definitions/ListedUser'
+      $ref: '#/definitions/ListedUserForAndroidClient'
   403:
     description: invalid app server token.
     schema:

@@ -22,7 +22,7 @@ seteo de las variables de entorno del docker-compose.yml
 
 1. Buildear la imagen ejecutando ```docker build . -t auth-server```
 
-2. Corremos el container ejecutando ```docker run -e GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000" -p 8000:8000 auth-server```
+2. Corremos el container ejecutando ```docker run -e GUNICORN_CMD_ARGS="--bind=0.0.0.0:8000" -p 8000:8000 --name auth-server auth-server```
 
 ### Opción con virtualenv
 
