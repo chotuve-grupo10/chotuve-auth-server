@@ -1,16 +1,22 @@
 Este servicio permitirá actualizar datos de un usuario. La accion la debe hacer un admin user.
 ---
 definitions:
+  UserModificationSuccessfulResponse:
+    type: object
+    properties:
+      Modify:
+        type: string
+        example: successfully modified user with email test@test.com
   UserToModify:
     type: object
     properties:
       email:
         type: string
-      full name:
+      full_name:
         type: string
-      phone number:
+      phone_number:
         type: string
-      profile picture:
+      profile_picture:
         type: string
 components:
   securitySchemes:
@@ -43,7 +49,13 @@ parameters:
 responses:
   200:
     description: user modified.
+    schema:
+      $ref: '#/definitions/UserModificationSuccessfulResponse'
   403:
     description: you dont have the necessary permissions to modify a user or your token is invalid.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
   500:
     description: there is an internal problem with the auth server.
+    schema:
+      $ref: '#/definitions/ErrorResponse'

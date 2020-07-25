@@ -225,9 +225,9 @@ def modify_user_from_db(client, mail, user_information):
 		cursor.execute("""UPDATE users SET email='{new_mail}', full_name='{new_name}', phone_number='{new_phone}', profile_picture='{new_picture}'
 						WHERE email='{email}';"""
 					.format(new_mail=user_information['email'],
-					new_name=user_information['full name'],
-					new_phone=user_information['phone number'],
-					new_picture=user_information['profile picture'],
+					new_name=user_information['full_name'],
+					new_phone=user_information['phone_number'],
+					new_picture=user_information['profile_picture'],
 					email=mail))
 		client.commit()
 		logger.debug('User modified')
