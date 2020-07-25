@@ -10,6 +10,7 @@ from auth_server.utilities.format_functions import format_with_underscores
 from auth_server.db_functions import *
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
 from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
+from auth_server.decorators.admin_user_or_app_server_token_decorator import admin_user_or_app_server_token_required
 from auth_server.persistence.user_persistence import UserPersistence
 from auth_server.exceptions.user_not_found_exception import UserNotFoundException
 from auth_server.exceptions.user_already_blocked_exception import UserlAlreadyBlockedException
@@ -57,7 +58,7 @@ def _delete_user(user_email):
 	return result, status_code
 
 @users_bp.route('/api/users/<user_email>', methods=['PUT'])
-@admin_user_required
+@admin_user_or_app_server_token_required
 @cross_origin(allow_headers=['Content-Type', 'authorization'])
 @swag_from('docs/modify_user.yml')
 def _modify_user(user_email):
