@@ -334,9 +334,9 @@ def test_get_user_profile_successfully(client):
 			response = client.get('/api/users/' + user_email, headers=hed, follow_redirects=False)
 
 			value_expected = {'email': 'test@test.com',
-								'full name': 'Test',
-								'phone number': '1234',
-								'profile picture' : 'test.jpg'}
+								'full_name': 'Test',
+								'phone_number': '1234',
+								'profile_picture' : 'test.jpg'}
 
 			assert mock.called
 			assert json.loads(response.data) == value_expected
