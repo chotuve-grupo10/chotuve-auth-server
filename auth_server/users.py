@@ -6,6 +6,7 @@ from flask import Blueprint, current_app, request
 from flask_cors import CORS, cross_origin
 from flasgger import swag_from
 from auth_server.validation_functions import *
+from auth_server.utilities.format_functions import format_with_underscores
 from auth_server.db_functions import *
 from auth_server.decorators.admin_user_required_decorator import admin_user_required
 from auth_server.decorators.app_server_token_required_decorator import app_server_token_required
@@ -96,7 +97,7 @@ def _get_user_profile(user_email):
 
 	try:
 		user = user_persistence.get_user_by_email(user_email)
-		result = user.serialize()
+		result = format_with_underscores(user.serialize())
 		status_code = 200
 		logger.debug('User profile found')
 	except UserNotFoundException:
