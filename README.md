@@ -4,7 +4,7 @@
 Este servidor será el encargado de brindar servicios de uso común como autenticación y login, tanto para el [App server](https://github.com/chotuve-grupo10/chotuve-application-server)
  como para otros que servicios que lo requieran. El objetivo de la administración de application servers es el de conocer el estado y el uso de estos. Para esto el Auth Server deberá consultar a los application servers, registrados previamente, para conocer datos acerca del uso del mismo.
 
-# Contenidos
+## Contenidos
 1. [Correr el server localmente](#set-up-para-correr-el-auth-server-localmente)
 2. [Tests y linter](#tests-y-linter)
 3. [CI/CD del server](#CI/CD)
