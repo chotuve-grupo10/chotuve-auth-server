@@ -67,7 +67,7 @@ Cada push que se haga al repo (sin importar la rama) lanzará un build en [Travi
 
 ### CD
 
-Una vez que haya una user story terminada, se deberá crear un pull request para mergear a dev. Este pull request deberá ser revisado por al menos un miembro del equipo y deberá ser aprobado. Dejamos a continuación las direcciones del auth server tanto de desarrollo como productivo:
+Una vez que se haya terminado una tarea, se deberá crear un pull request para mergear a dev. Este pull request deberá ser revisado por al menos un miembro del equipo y deberá ser aprobado. Dejamos a continuación las direcciones del auth server tanto de desarrollo como productivo:
 
 - [Auth server dev](https://chotuve-auth-server-dev.herokuapp.com/)
 
