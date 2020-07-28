@@ -169,7 +169,7 @@ def test_modify_user_from_admin_user_successfully(client):
 			user_information = {'email': 'test@test.com',
 				'password': 'fake password',
 				'full_name': 'full name',
-				'phone_number': 'phone number', 'profile picture': 'profile picture'}
+				'phone_number': 'phone number', 'profile_picture': 'profile picture'}
 
 			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
 
@@ -195,7 +195,7 @@ def test_modify_user_with_app_server_token_successfully(client):
 			user_information = {'email': 'test@test.com',
 				'password': 'fake password',
 				'full_name': 'full name',
-				'phone_number': 'phone number', 'profile picture': 'profile picture'}
+				'phone_number': 'phone number', 'profile_picture': 'profile picture'}
 
 			mock_modify_user.return_value = {'Modify':'successfully modified user with email {0}'.format(user_email)}, 200
 
@@ -257,7 +257,7 @@ def test_get_users_successfully(client):
 					'email': 'test@test.com',
 					'full_name': 'full name',
 					'phone_number': 'phone number',
-					'profile picture': 'profile picture'
+					'profile_picture': 'profile picture'
 				},
 				{
 					'email': 'test@test.com',
