@@ -1,0 +1,2 @@
+class AppServerNotFoundException(Exception):
+  pass

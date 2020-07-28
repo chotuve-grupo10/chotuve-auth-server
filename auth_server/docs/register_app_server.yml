@@ -1,5 +1,45 @@
 Este servicio permitirá registrar un app server
 ---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+definitions:
+  RegisterAppServerSuccessfullyResponse:
+    type: object
+    properties:
+      App server token:
+        type: string
+        format: uuid
+  ErrorResponse:
+    type: object
+    properties:
+      Error:
+        type: string
+        example: Error message
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+parameters:
+  - in: header
+    name: authorization
+    description: token
+    type: string
+    required: true
 responses:
-  200:
-    description: Returns token
+  201:
+    description: Returns token for app server
+    schema:
+      $ref: '#/definitions/RegisterAppServerSuccessfullyResponse'
+  403:
+    description: You are not an admin user o your token is invalid.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  500:
+    description: There is a problem with the auth server
+    schema:
+      $ref: '#/definitions/ErrorResponse'

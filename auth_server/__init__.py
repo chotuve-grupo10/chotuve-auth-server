@@ -4,18 +4,35 @@ from urllib.parse import urlparse
 import psycopg2 as psql
 from psycopg2 import errors as psql_errors
 from flask import Flask, request
+from flask_mail import Mail
 from flasgger import Swagger
 from flasgger import swag_from
 from flask_cors import CORS
 import simplejson as json
+from flask_sqlalchemy import SQLAlchemy
 from auth_server.authentication import authentication_bp
 from auth_server.users import users_bp
+from auth_server.app_servers import app_servers_bp
 from auth_server.db_functions import initialize_db
 from auth_server.token_functions import *
 
-def create_app(test_config=None):
+mail = Mail()
+
+def create_app(test_config=None, db_connection=None):
 	# create and configure the app
 	app = Flask(__name__, instance_relative_config=True)
+
+	app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+	app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+	app.config["MAIL_SERVER"] = 'smtp.gmail.com'
+	app.config["MAIL_PORT"] = 465
+	app.config["MAIL_USE_SSL"] = True
+	app.config["MAIL_DEFAULT_SENDER"] = "chotuve.g10@gmail.com"
+	app.config["MAIL_USERNAME"] = "chotuve.g10@gmail.com"
+	app.config["MAIL_PASSWORD"] = "falopa123"
+
+	mail.init_app(app)
+	app.db = db_connection or SQLAlchemy(app)
 
 	parameters = urlparse(os.environ.get('DATABASE_URL'))
 	username = parameters.username
@@ -64,6 +81,7 @@ def create_app(test_config=None):
 	with app.app_context():
 		app.register_blueprint(authentication_bp)
 		app.register_blueprint(users_bp)
+		app.register_blueprint(app_servers_bp)
 
 	@app.route('/api/ping/', methods=['GET'])
 	@swag_from('docs/ping.yml')
@@ -94,33 +112,5 @@ def create_app(test_config=None):
 	@app.route('/')
 	def _index():
 		return "<h1>Welcome to auth server !</h1>"
-
-	### Métodos no implementados aún ###
-	# @app.route('/api/profile/', methods=['GET'])
-	# @swag_from('docs/profile.yml')
-	# def _profile():
-	# 	jwt_token = request.headers.get('authorization', None)
-	# 	result, status_code = validate_token(jwt_token)
-	# 	return result, status_code
-	#
-	# @app.route('/api/update_profile/user/<int:id>', methods=['PATCH'])
-	# @swag_from('docs/update_profile.yml')
-	# def _update_profile():
-	# 	return {}
-	#
-	# @app.route('/api/register_app_server/', methods=['GET'])
-	# @swag_from('docs/register_app_server.yml')
-	# def _register_app_server():
-	# 	return {}
-	#
-	# @app.route('/api/stats/', methods=['GET'])
-	# @swag_from('docs/stats.yml')
-	# def _stats():
-	# 	return {}
-	#
-	# @app.route('/api/status/', methods=['GET'])
-	# @swag_from('docs/status.yml')
-	# def _status():
-	# 	return {}
 
 	return app

@@ -1,0 +1,44 @@
+Este servicio permitirá borrar un app server previamente registrado.
+---
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - bearerAuth: []
+definitions:
+  DeleteAppServerSuccessfullyResponse:
+    type: object
+    properties:
+      Delete app server:
+        type: string
+        example: deleted app server successfully
+tags:
+  - name: admins
+    description: Secured Admin-only calls
+parameters:
+  - in: header
+    name: authorization
+    description: token
+    type: string
+    required: true
+  - in: path
+    name: app_server_token
+    description: App server token
+    type: string
+    required: true
+responses:
+  200:
+    description: App server deleted
+    schema:
+      $ref: '#/definitions/DeleteAppServerSuccessfullyResponse'
+  403:
+    description: You are not an admin user o your token is invalid.
+    schema:
+      $ref: '#/definitions/ErrorResponse'
+  500:
+    description: There is a problem with the auth server
+    schema:
+      $ref: '#/definitions/ErrorResponse'

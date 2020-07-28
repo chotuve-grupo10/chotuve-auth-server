@@ -4,12 +4,18 @@ from http import HTTPStatus
 from flask import Blueprint, current_app, request
 from auth_server.db_functions import *
 from auth_server.token_functions import *
+from auth_server.persistence.app_server_persistence import AppServerPersistence
+from auth_server.exceptions.app_server_not_found_exception import AppServerNotFoundException
 
 ADMIN_FLAG_POSITION = 7
+BLOCKED_FLAG_POSITION = 8
 
 logger = logging.getLogger('gunicorn.error')
 
 def validar_usuario(user, password):
+	if is_blocked_user(user):
+		return False
+
 	hashed = user[4]
 	salt = user[5]
 	for i in range(256):
@@ -31,6 +37,10 @@ def validate_admin_user(user):
 	admin_user = user[ADMIN_FLAG_POSITION]
 	return admin_user == '1'
 
+def is_blocked_user(user):
+	admin_user = user[BLOCKED_FLAG_POSITION]
+	return admin_user == '1'
+
 def is_request_from_admin_user(token):
 	result_validate, status_code_validate = validate_token(token)
 
@@ -43,6 +53,10 @@ def is_request_from_admin_user(token):
 				result, status_code, user = get_user(current_app.client, user_email)
 
 			if HTTPStatus.OK == status_code:
+				if is_blocked_user(user):
+					logger.debug('This user is BLOCKED')
+					return False
+
 				if validate_admin_user(user):
 					logger.debug('Token is from admin user')
 					return True
@@ -58,4 +72,15 @@ def is_request_from_admin_user(token):
 			return False
 	else:
 		logger.error('The token is invalid')
+		return False
+
+def is_valid_token_from_app_server(app_server_token):
+
+	app_servers_persistence = AppServerPersistence(current_app.db)
+	try:
+		app_servers_persistence.get_app_server_by_token(app_server_token)
+		logger.debug('App server token is valid')
+		return True
+	except AppServerNotFoundException as notFound:
+		logger.debug('App server token is NOT valid')
 		return False
