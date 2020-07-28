@@ -52,9 +52,9 @@ class User(Base):
 	def serialize(self):
 		return {
 			 'email' : self.email,
-			 'full name' : self.full_name,
-			 'phone number' : self.phone_number,
-			 'profile picture' : self.profile_picture
+			 'full_name' : self.full_name,
+			 'phone_number' : self.phone_number,
+			 'profile_picture' : self.profile_picture
 		 }
 
 	def __repr__(self):
