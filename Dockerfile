@@ -9,4 +9,4 @@ ENV DATABASE_URL="postgres://mnigwkzorbukjg:f8d628d71867b3206dfcfa0bfd889844a5ba
 ENV APP_SERVER_URL="https://chotuve-app-server-dev.herokuapp.com"
 EXPOSE 8000
 COPY . .
-CMD gunicorn --log-level=debug 'auth_server:create_app()'
+CMD gunicorn --certfile cert.pem --keyfile key.pem --log-level=debug 'auth_server:create_app()'
