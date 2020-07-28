@@ -45,6 +45,6 @@ def test_serialize_user_successfully():
 	serialized_user = user.serialize()
 
 	assert serialized_user == {'email': 'test@test.com',
-	 'full name': 'Test',
-	 'phone number': '1234',
-	 'profile picture' : 'test.jpg'}
+	 'full_name': 'Test',
+	 'phone_number': '1234',
+	 'profile_picture' : 'test.jpg'}
