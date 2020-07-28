@@ -245,8 +245,8 @@ def modify_user_from_db(client, mail, user_information):
 def serialize_user(user):
 	return {
 		'email' : user[EMAIL_POSITION],
-		'full name' : user[FULL_NAME_POSITION],
-		'phone number' : user[PHONE_NUMBER_POSITION],
-		'profile picture': user[PROFILE_PICTURE_POSITION],
+		'full_name' : user[FULL_NAME_POSITION],
+		'phone_number' : user[PHONE_NUMBER_POSITION],
+		'profile_picture': user[PROFILE_PICTURE_POSITION],
 		'blocked': user[BLOCKED_USER_POSITION] == '1'
 	}
