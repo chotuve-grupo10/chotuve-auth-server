@@ -61,7 +61,7 @@ pytest-cov==2.8.1
 pytest-pgsql==1.1.2
 python-dateutil==2.8.1
 pytz==2020.1
-PyYAML==5.3.1
+PyYAML==5.4
 req==1.0.0
 requests==2.23.0
 requests-futures==1.0.0
